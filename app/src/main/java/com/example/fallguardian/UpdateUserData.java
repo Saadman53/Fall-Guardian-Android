@@ -20,7 +20,7 @@ public class UpdateUserData extends AppCompatActivity {
     EditText userFirstName,userLastName,userPhoneNumber,monitorFirstName,monitorLastName,monitorPhoneNumber;
     Button updateButton;
     ProgressBar progressBar;
-
+    
     private DatabaseReference databaseReference;
     FirebaseUser user;
     @Override
