@@ -98,7 +98,7 @@ class FallDetector {
         Notification notification = new NotificationCompat.Builder(context,CHANNEL_1_ID)
                 .setSmallIcon(R.drawable.ic_fall)
                 .setContentTitle("Fall Detected!")
-                .setContentText("You seem to have fallen. Click to open app")
+                .setContentText("You seem to have fallen. Click to open app.")
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
                 .setCategory(NotificationCompat.CATEGORY_ALARM)
                 .setContentIntent(contentIntent)
