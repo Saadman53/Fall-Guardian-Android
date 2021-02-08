@@ -394,17 +394,14 @@ public class SensorActivity extends AppCompatActivity implements SensorEventList
     @Override
     public void applyText(String fall) {
         if (fall.equals("2")) {
-            Toast.makeText(this, "Selected Yes, send SMS", Toast.LENGTH_SHORT).show();
             ///Send sms
             if (current_elderly_user != null) {
-                //getLocationAndSendSMS();
                 fallDetector.locationAndSMS.getLocationAndSendSMS();
-                //Toast.makeText(this,"SMS SENT",Toast.LENGTH_SHORT).show();
             }
         } else if (fall.equals("1")) {
-            Toast.makeText(this, "Selected Yes, don't send SMS", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Incase of emergency press 'Emergency Distress Signal' option from the menu.", Toast.LENGTH_LONG).show();
         } else if (fall.equals("0")) {
-            Toast.makeText(this, "Selected No", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Better safe than sorry!", Toast.LENGTH_SHORT).show();
             fallDetector.dismissFallDialogue();
         }
 
