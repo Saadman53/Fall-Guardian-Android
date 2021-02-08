@@ -1,5 +1,6 @@
 package com.example.fallguardian;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
@@ -18,6 +19,7 @@ import com.bumptech.glide.Glide;
 
 public class FallDialogue extends AppCompatDialogFragment {
 
+
     String title, message;
 
 
@@ -25,10 +27,8 @@ public class FallDialogue extends AppCompatDialogFragment {
     public FallDialogue(String title, String message) {
         this.title = title;
         this.message = message;
-    }
 
-    //"Fall Detected!"
-    //"Oh no! Have you fallen?"
+    }
 
 
 
@@ -37,12 +37,6 @@ public class FallDialogue extends AppCompatDialogFragment {
     @Override
     public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
 
-//        Glide.with(this)
-//                .load(R.drawable.)
-//                .into(imageView);
-
-        LayoutInflater factory = LayoutInflater.from(getActivity());
-        View view = factory.inflate(R.layout.sample, null);
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         builder.setTitle(title)
                 .setMessage(message)
@@ -75,7 +69,7 @@ public class FallDialogue extends AppCompatDialogFragment {
             fallDialogueListener = (FallDialogueListener) context;
         }
         catch (Exception e){
-            throw new ClassCastException(context.toString()+" must implement FallDialogueListener");
+            throw new ClassCastException(context.toString()+" must implement FallDialogueListener "+e);
         }
     }
 

@@ -61,6 +61,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 import android.os.Vibrator;
 
+import static com.example.fallguardian.LocationAndSMS.PERMISSIONS;
 import static com.example.fallguardian.NotifApp.CHANNEL_1_ID;
 
 
@@ -92,8 +93,7 @@ public class SensorActivity extends AppCompatActivity implements SensorEventList
     List<Data> list_both;
 
 
-    ///communication medium to client server
-    Communicator communicator;
+
 
 
 
@@ -104,28 +104,10 @@ public class SensorActivity extends AppCompatActivity implements SensorEventList
     ///display informations
     TextView userName, userPhone, monitorName, monitorPhone;
 
+    FallDetector fallDetector;
 
-
-
-    int prev_response;
-    boolean fall_detected;
-    double fall_detection_time;
-    Vibrator v;
     ///invoke when user is on pause
     private boolean isOnPause;
-
-    LocationAndSMS locationAndSMS;
-
-
-
-
-    ///dialogue box
-    FallDialogue fallDialogue;
-    ///Notificaiton
-    NotificationManagerCompat notificationManager;
-    Notification notification;
-    boolean isNotificationEnabled;
-
 
 
 
@@ -148,10 +130,6 @@ public class SensorActivity extends AppCompatActivity implements SensorEventList
         }
 
 
-        ///initialize communicator instance
-        communicator =  new Communicator();
-
-        disableFallDetection();
         isOnPause = false;
 
         ///Initializing Sensor Services
@@ -194,7 +172,9 @@ public class SensorActivity extends AppCompatActivity implements SensorEventList
 
                 if(snapshot.exists()){
                     current_elderly_user = snapshot.child(user.getUid()).getValue(Elderly.class);
-                    locationAndSMS.setElderly(current_elderly_user);
+                    //locationAndSMS.setElderly(current_elderly_user);
+                    fallDetector.setElderly(current_elderly_user);
+
                     if(!current_elderly_user.getFirstLogin()){
                         databaseReference.child(user.getUid()).child("firstLogin").setValue(true);
                         isOnPause = false;
@@ -230,28 +210,8 @@ public class SensorActivity extends AppCompatActivity implements SensorEventList
 
         });
 
+        fallDetector = new FallDetector(this);
 
-        v = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
-
-        prev_response = 0;
-        isNotificationEnabled = false;
-
-
-       ///Initialize locationAndSMS
-       locationAndSMS = new LocationAndSMS(this);
-       ///Ask permissions for location and SMS
-       locationAndSMS.askPermissions();
-
-
-
-
-        notificationManager = NotificationManagerCompat.from(this);
-
-
-        disableFallDetection();
-
-
-//
 
         Log.d("Activity","USER IS ______________________________TURNED____________________________________ON CREATE");
 
@@ -266,17 +226,18 @@ public class SensorActivity extends AppCompatActivity implements SensorEventList
         collect_data = true;
         isOnPause = false;
 
-        disableFallDetection();
+        fallDetector.disableFallDetection();
         //if(!fall_detected) Toast.makeText(this,"OFF____________________________________________________________________________OOOOOOOOOOOOOOOOOFFFFFFFFFFFFFFF",Toast.LENGTH_LONG).show();
 
         ///incase user doesnt tap on to pending notification
-        if(isNotificationEnabled){
+        if(fallDetector.getNotificationEnabled()){
             Toast.makeText(this,"Fall Detected!",Toast.LENGTH_SHORT).show();
-            notificationManager.cancel(1);
-            enableFallDetection();
-            initiateFallDialogue();
+            fallDetector.notificationManager.cancel(1);
+            fallDetector.enableFallDetection();
+            fallDetector.initiateFallDialogue();
         }
-        isNotificationEnabled = false;
+        //isNotificationEnabled = false;
+        fallDetector.setNotificationEnabled(false);
         Log.d("Activity","USER IS ______________________________TURNED____________________________________ON START");
     }
 
@@ -300,8 +261,8 @@ public class SensorActivity extends AppCompatActivity implements SensorEventList
             startActivity(intent);
         }
         else if(item.getItemId() == R.id.emergencyId){
-
-            locationAndSMS.getLocationAndSendSMS();
+            //locationAndSMS.getLocationAndSendSMS();
+            fallDetector.locationAndSMS.getLocationAndSendSMS();
         }
         else if(item.getItemId()==R.id.updateId){
             collect_data = false;
@@ -325,6 +286,8 @@ public class SensorActivity extends AppCompatActivity implements SensorEventList
         }
         Log.d("Activity","USER IS ______________________________TURNED____________________________________ON PAUSE");
     }
+
+
 
 
     private int binary_ACC(double time, List<Data_ACC> list, int length) {
@@ -361,19 +324,6 @@ public class SensorActivity extends AppCompatActivity implements SensorEventList
 
 
 
-
-
-    public void initiateFallDialogue(){
-        try{
-            fallDialogue = new FallDialogue("Fall Detected!","Oh no! Are you injured?!");
-            fallDialogue.show(getSupportFragmentManager(), "fall dialogue");
-        }
-        catch (Exception e){
-            e.printStackTrace();
-        }
-    }
-
-
     @Override
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
 
@@ -401,46 +351,7 @@ public class SensorActivity extends AppCompatActivity implements SensorEventList
                 }
             }
 
-            if (fall_detected) {
-                Log.d(TAG,"User fell down and time of falling is _________________________________________________________:           "+fall_detection_time);
-                ///check if 20 seconds have passed since user hasn't responded to the fall dialogue
-                //user might be injured
-                if (( (System.currentTimeMillis() / 1000.0) - fall_detection_time) >= 20.0) {
-                    disableFallDetection();
-
-                    locationAndSMS.getLocationAndSendSMS();
-                    //Toast.makeText(this,"SMS SENT",Toast.LENGTH_SHORT).show();
-
-                    ///app screen is showing
-                    if(!isOnPause){
-                        if (fallDialogue != null) {
-                            try{
-                                fallDialogue.dismiss();
-                            }
-                            catch (Exception e){
-                                e.printStackTrace();
-                            }
-                        }
-                    }
-                    else{
-                        if(isNotificationEnabled){
-                            ///dismiss the notification
-                            notificationManager.cancel(1);
-                            isNotificationEnabled = false;
-                        }
-                    }
-                }
-            }
-            else{
-                Log.d(TAG,"User has not fallen down _________________________________________________________:           "+fall_detection_time);
-            }
-
-//            if(isOnPause){
-//                Log.d("pause","USER IS__________________________________ON PAUSE");
-//            }
-//            else{
-//                Log.d("pause","USER IS__________________________________NOT ON PAUSE");
-//            }
+            fallDetector.fallTimer(isOnPause);
         }
 
 
@@ -468,7 +379,7 @@ public class SensorActivity extends AppCompatActivity implements SensorEventList
 
             list_ACC = list_ACC.subList(index + 1, list_ACC.size());
             start_time = (list_ACC.get(0).getTimestamp()) / 1000.0;
-            createPost_ACC(temp);
+            fallDetector.createPost_ACC(temp,isOnPause);
 
         }
     }
@@ -495,154 +406,52 @@ public class SensorActivity extends AppCompatActivity implements SensorEventList
             list_both = list_both.subList(index + 1, list_both.size());
             start_time = (list_both.get(0).getTimestamp()) / 1000.0;
 
-            createPost_both(temp);
+            fallDetector.createPost_both(temp,isOnPause);
 
         }
 
-    }
-
-    private void createPost_ACC(List<Data_ACC> list) {
-
-        Call<Fall> call = communicator.getClient_acc().GetPostValue_ACC(list);
-        call.enqueue(new Callback<Fall>() {
-            @Override
-            public void onResponse(Call<Fall> call, Response<Fall> response) {
-                Fall hasFall = response.body();
-                try {
-                    if (hasFall.getFall() == 1) {
-
-                        if (prev_response == 0) {
-                            Toast.makeText(getApplicationContext(), "Fall Detected!", Toast.LENGTH_LONG).show();
-
-                            enableFallDetection();
-
-                            if(!isOnPause){
-                                initiateFallDialogue();
-                            }
-                            else{
-                                ///show notification
-                                sendNotification();
-                            }
-
-                            Log.d(TAG, "User has________________________________________________________________fallen_________" + current_elderly_user.getMonitor_phone_number());
-
-                            ///initiate timer
-
-                            v.vibrate(1000);
-
-                        }
-
-                    }
-                    prev_response = hasFall.getFall();
-                    //Log.d(TAG, "Response__________________________________________________SUCCESS______" + hasFall.getFall());
-                } catch (NullPointerException e) {
-                    Log.d(TAG, "CAUGHT++++++++++++++++++++EXCEPTION++++++++++============" + e);
-
-                }
-
-            }
-
-            @Override
-            public void onFailure(Call<Fall> call, Throwable t) {
-                Log.d(TAG, "_____________________________________________FAILURE_____________" + String.valueOf(t));
-            }
-        });
-    }
-
-    private void createPost_both(List<Data> list) {
-
-        Call<Fall> call = communicator.getClient_both().GetPostValue_both(list);
-        call.enqueue(new Callback<Fall>() {
-            @Override
-            public void onResponse(Call<Fall> call, Response<Fall> response) {
-                Fall hasFall = response.body();
-                if (hasFall.getFall() == 1) {
-                    if (prev_response == 0) {
-                        Toast.makeText(getApplicationContext(), "Fall Detected!", Toast.LENGTH_LONG).show();
-
-                        enableFallDetection();
-
-                        if(!isOnPause){
-                            initiateFallDialogue();
-                        }
-                        else{
-                            ///show notification
-                            sendNotification();
-                        }
-                        Log.d(TAG, "User has________________________________________________________________fallen_________" + current_elderly_user.getMonitor_phone_number());
-
-
-                        ///initiate timer
-
-
-                        v.vibrate(1000);
-
-                    }
-                }
-                prev_response = hasFall.getFall();
-               // Log.d(TAG, "Response__________________________________________________SUCCESS______" + hasFall.getFall());
-            }
-
-            @Override
-            public void onFailure(Call<Fall> call, Throwable t) {
-                Log.d(TAG, "___________________________________ERROR FOR GYRO+_________________" + String.valueOf(t));
-            }
-        });
     }
 
 
     @Override
     public void applyText(String fall) {
         if (fall.equals("2")) {
-            Toast.makeText(getApplicationContext(), "Selected Yes, send SMS", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Selected Yes, send SMS", Toast.LENGTH_SHORT).show();
             ///Send sms
             if (current_elderly_user != null) {
                 //getLocationAndSendSMS();
-                locationAndSMS.getLocationAndSendSMS();
+                fallDetector.locationAndSMS.getLocationAndSendSMS();
                 //Toast.makeText(this,"SMS SENT",Toast.LENGTH_SHORT).show();
             }
         } else if (fall.equals("1")) {
-            Toast.makeText(getApplicationContext(), "Selected Yes, don't send SMS", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Selected Yes, don't send SMS", Toast.LENGTH_SHORT).show();
         } else if (fall.equals("0")) {
-            Toast.makeText(getApplicationContext(), "Selected No", Toast.LENGTH_SHORT).show();
-            fallDialogue.dismiss();
+            Toast.makeText(this, "Selected No", Toast.LENGTH_SHORT).show();
+            fallDetector.fallDialogue.dismiss();
         }
 
-        disableFallDetection();
+        fallDetector.disableFallDetection();
     }
+    @Override
+    public void onRequestPermissionsResult(int requestCode,String permissions[], int[] grantResults) {
+        switch (requestCode) {
+            case PERMISSIONS:{
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    if(fallDetector.fall_detected){
+                        fallDetector.locationAndSMS.sendSMSMessage();
+                    }
+                } else {
+                    Toast.makeText(this,
+                            "SMS faild, please try again.", Toast.LENGTH_LONG).show();
+                    return;
+                }
+            }
 
-    public void sendNotification(){
-
-        Intent activityIntent = new Intent(this,SensorActivity.class);
-        activityIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-
-        PendingIntent contentIntent = PendingIntent.getActivity(this,0,activityIntent,0);
-
-
-
-        notification = new NotificationCompat.Builder(this,CHANNEL_1_ID)
-                .setSmallIcon(R.drawable.ic_fall)
-                .setContentTitle("Fall Detected!")
-                .setContentText("You seem to have fallen. Click to open app")
-                .setPriority(NotificationCompat.PRIORITY_HIGH)
-                .setCategory(NotificationCompat.CATEGORY_ALARM)
-                .setContentIntent(contentIntent)
-                .setAutoCancel(true)
-                .build();
-        notificationManager.notify(1,notification);
-        isNotificationEnabled = true;
+        }
 
     }
 
-    public void enableFallDetection(){
-        fall_detected = true;
-        fall_detection_time = System.currentTimeMillis() / 1000.0;
-    }
-
-    public void disableFallDetection(){
-        fall_detected = false;
-        fall_detection_time = 100000000000000.0;
-    }
 
 
 }
