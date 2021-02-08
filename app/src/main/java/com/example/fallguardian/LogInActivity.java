@@ -36,7 +36,6 @@ public class LogInActivity extends AppCompatActivity  {
 
     ProgressBar progressBar;
 
-    FirebaseAuth mAuth;
     FirebaseUser user;
 
     String email ;
@@ -63,8 +62,6 @@ public class LogInActivity extends AppCompatActivity  {
 
         progressBar = (ProgressBar) findViewById(R.id.progressBarId);
 
-        mAuth = FirebaseAuth.getInstance();
-
         signupTextView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -87,7 +84,7 @@ public class LogInActivity extends AppCompatActivity  {
                     public void onClick(DialogInterface dialog, int which) {
                         ///extract the email and sent reset link
                         String mail = resetMail.getText().toString();
-                        mAuth.sendPasswordResetEmail(mail).addOnSuccessListener(new OnSuccessListener<Void>() {
+                        FirebaseAuth.getInstance().sendPasswordResetEmail(mail).addOnSuccessListener(new OnSuccessListener<Void>() {
                             @Override
                             public void onSuccess(Void aVoid) {
                                 Toast.makeText(LogInActivity.this,"Reset Link Sent To Your Email",Toast.LENGTH_SHORT).show();
@@ -163,7 +160,7 @@ public class LogInActivity extends AppCompatActivity  {
         if(password.length()>=6){
             //Toast.makeText(getApplicationContext(),"SUCCESSFULLY REGISTERED",Toast.LENGTH_SHORT).show();
             progressBar.setVisibility(View.GONE);
-            mAuth.signInWithEmailAndPassword(email,password).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
+            FirebaseAuth.getInstance().signInWithEmailAndPassword(email,password).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
 
                @Override
                public void onComplete(@NonNull Task<AuthResult> task) {

@@ -33,10 +33,7 @@ public class SignUpActivity extends AppCompatActivity  {
 
     ProgressBar progressBar;
 
-    private FirebaseAuth mAuth;
-
-    private FirebaseDatabase database;
-    private DatabaseReference ref;
+    private DatabaseReference databaseReference;
 
 
 
@@ -73,12 +70,7 @@ public class SignUpActivity extends AppCompatActivity  {
 
         progressBar = findViewById(R.id.progressBarId);
 
-        mAuth = FirebaseAuth.getInstance();
-
-
-        database = FirebaseDatabase.getInstance();
-
-        ref = database.getReference("users");
+        databaseReference = FirebaseDatabase.getInstance().getReference("users");
 
 
 
@@ -164,7 +156,7 @@ public class SignUpActivity extends AppCompatActivity  {
         progressBar.setVisibility(View.VISIBLE);
         if(user_password.length()>=6 && user_password.equals(confirmed_user_password)){
             //Toast.makeText(getApplicationContext(),"SUCCESSFULLY REGISTERED",Toast.LENGTH_SHORT).show();
-            mAuth.createUserWithEmailAndPassword(user_email, user_password)
+            FirebaseAuth.getInstance().createUserWithEmailAndPassword(user_email, user_password)
                     .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
                         @Override
                         public void onComplete(@NonNull Task<AuthResult> task) {
@@ -173,9 +165,9 @@ public class SignUpActivity extends AppCompatActivity  {
                                 // Sign up is successful, update database
 
                                  Elderly elderly = new Elderly(user_first_name, user_last_name, user_email, user_phone_number,monitor_first_name,monitor_last_name, monitor_phone_number,false);
-                                 FirebaseUser user = mAuth.getCurrentUser();
+                                 FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
                                  String userID = user.getUid();
-                                 ref.child(userID).setValue(elderly);
+                                 databaseReference.child(userID).setValue(elderly);
                                  Toast.makeText(getApplicationContext(),"SUCCESSFULLY REGISTERED",Toast.LENGTH_SHORT).show();
 
                                 ///send email verification

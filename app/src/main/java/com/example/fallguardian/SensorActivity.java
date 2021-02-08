@@ -3,14 +3,6 @@ package com.example.fallguardian;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
-import androidx.core.app.NotificationCompat;
-import androidx.core.app.NotificationManagerCompat;
-import androidx.core.content.ContextCompat;
-
-import android.Manifest;
-import android.app.Notification;
-import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -18,26 +10,22 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
-import android.location.Location;
+
 import android.os.Bundle;
-import android.telephony.SmsManager;
+
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.ImageView;
+
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
 import com.google.android.gms.common.GooglePlayServicesRepairableException;
 
-import com.google.android.gms.location.FusedLocationProviderClient;
-import com.google.android.gms.location.LocationServices;
+
 import com.google.android.gms.security.ProviderInstaller;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
+
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -53,22 +41,14 @@ import java.util.List;
 
 import javax.net.ssl.SSLContext;
 
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
-import retrofit2.Retrofit;
-import retrofit2.converter.gson.GsonConverterFactory;
 
-import android.os.Vibrator;
 
 import static com.example.fallguardian.LocationAndSMS.PERMISSIONS;
-import static com.example.fallguardian.NotifApp.CHANNEL_1_ID;
 
 
 public class SensorActivity extends AppCompatActivity implements SensorEventListener, FallDialogue.FallDialogueListener {
 
     private static final String TAG = "LogInActivity";
-    private static final int MY_PERMISSIONS_REQUEST_SEND_SMS = 0;
 
     ///Initializing sensors
     private SensorManager sensorManager;
@@ -85,7 +65,7 @@ public class SensorActivity extends AppCompatActivity implements SensorEventList
 
     ///Database
     DatabaseReference databaseReference;
-    FirebaseAuth mAuth;
+    FirebaseUser user;
 
 
     //Datastructures
@@ -98,7 +78,7 @@ public class SensorActivity extends AppCompatActivity implements SensorEventList
 
 
     ///current user data
-    FirebaseUser user;
+
     Elderly current_elderly_user;
 
     ///display informations
@@ -149,8 +129,6 @@ public class SensorActivity extends AppCompatActivity implements SensorEventList
         list_ACC = new ArrayList<Data_ACC>();
         list_both = new ArrayList<Data>();
         Toast.makeText(getApplicationContext(), "Data is being collected", Toast.LENGTH_SHORT).show();
-
-        mAuth = FirebaseAuth.getInstance();
 
         user = FirebaseAuth.getInstance().getCurrentUser();
 
@@ -232,7 +210,7 @@ public class SensorActivity extends AppCompatActivity implements SensorEventList
         ///incase user doesnt tap on to pending notification
         if(fallDetector.getNotificationEnabled()){
             Toast.makeText(this,"Fall Detected!",Toast.LENGTH_SHORT).show();
-            fallDetector.notificationManager.cancel(1);
+            fallDetector.cancelNotification(1);
             fallDetector.enableFallDetection();
             fallDetector.initiateFallDialogue();
         }
@@ -351,7 +329,7 @@ public class SensorActivity extends AppCompatActivity implements SensorEventList
                 }
             }
 
-            fallDetector.fallTimer(isOnPause);
+            fallDetector.countFallTimer(isOnPause);
         }
 
 
@@ -427,7 +405,7 @@ public class SensorActivity extends AppCompatActivity implements SensorEventList
             Toast.makeText(this, "Selected Yes, don't send SMS", Toast.LENGTH_SHORT).show();
         } else if (fall.equals("0")) {
             Toast.makeText(this, "Selected No", Toast.LENGTH_SHORT).show();
-            fallDetector.fallDialogue.dismiss();
+            fallDetector.dismissFallDialogue();
         }
 
         fallDetector.disableFallDetection();
@@ -438,7 +416,7 @@ public class SensorActivity extends AppCompatActivity implements SensorEventList
             case PERMISSIONS:{
                 if (grantResults.length > 0
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    if(fallDetector.fall_detected){
+                    if(fallDetector.isFall_detected()){
                         fallDetector.locationAndSMS.sendSMSMessage();
                     }
                 } else {

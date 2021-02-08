@@ -24,20 +24,20 @@ import static com.example.fallguardian.NotifApp.CHANNEL_1_ID;
 
 
 class FallDetector {
-    Context context;
-    Communicator communicator;
-    public LocationAndSMS locationAndSMS;
-    Elderly elderly;
+    private Context context;
+    private Communicator communicator;
+    private Elderly elderly;
     int prev_response;
     boolean fall_detected;
     double fall_detection_time;
-    Vibrator v;
+    private Vibrator v;
+
+    public LocationAndSMS locationAndSMS;
 
     ///dialogue box
-    public FallDialogue fallDialogue;
+    private FallDialogue fallDialogue;
     ///Notificaiton
     public NotificationManagerCompat notificationManager;
-    Notification notification;
     boolean isNotificationEnabled;
 
     public FallDetector(Context c) {
@@ -95,7 +95,7 @@ class FallDetector {
 
 
 
-        notification = new NotificationCompat.Builder(context,CHANNEL_1_ID)
+        Notification notification = new NotificationCompat.Builder(context,CHANNEL_1_ID)
                 .setSmallIcon(R.drawable.ic_fall)
                 .setContentTitle("Fall Detected!")
                 .setContentText("You seem to have fallen. Click to open app")
@@ -107,6 +107,10 @@ class FallDetector {
         notificationManager.notify(1,notification);
         isNotificationEnabled = true;
 
+    }
+
+    public void cancelNotification(int id){
+        notificationManager.cancel(id);
     }
 
     public void createPost_ACC(List<Data_ACC> list, boolean isOnPause) {
@@ -124,10 +128,9 @@ class FallDetector {
 
                             enableFallDetection();
 
-                            if(!isOnPause){
+                            if (!isOnPause) {
                                 initiateFallDialogue();
-                            }
-                            else{
+                            } else {
                                 ///show notification
                                 sendNotification();
                             }
@@ -155,16 +158,6 @@ class FallDetector {
                 Log.d("SensorActivity", "_____________________________________________FAILURE_____________" + String.valueOf(t));
             }
         });
-    }
-    public void initiateFallDialogue(){
-        try{
-            fallDialogue = new FallDialogue("Fall Detected!","Oh no! Are you injured?!");
-            fallDialogue.show(((FragmentActivity)context).getSupportFragmentManager(), "fall dialogue");
-            Log.d("TAG","WORKING________________________________________________________");
-        }
-        catch (Exception e){
-            e.printStackTrace();
-        }
     }
 
     public void createPost_both(List<Data> list,boolean isOnPause) {
@@ -208,7 +201,21 @@ class FallDetector {
         });
     }
 
-    public void fallTimer(boolean isOnPause){
+    public void initiateFallDialogue(){
+        try{
+            fallDialogue = new FallDialogue("Fall Detected!","Oh no! Are you injured?!");
+            fallDialogue.show(((FragmentActivity)context).getSupportFragmentManager(), "fall dialogue");
+            Log.d("TAG","WORKING________________________________________________________");
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+    public void dismissFallDialogue(){
+        fallDialogue.dismiss();
+    }
+
+    public void countFallTimer(boolean isOnPause){
         if (fall_detected) {
             Log.d("Sensor Activity","User fell down and time of falling is _________________________________________________________:           "+fall_detection_time);
             ///check if 20 seconds have passed since user hasn't responded to the fall dialogue
@@ -242,6 +249,8 @@ class FallDetector {
            // Log.d("SensorActivity","User has not fallen down _________________________________________________________:           "+fall_detection_time);
         }
     }
+
+
 
 
 }

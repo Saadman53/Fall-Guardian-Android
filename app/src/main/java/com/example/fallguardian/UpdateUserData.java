@@ -21,8 +21,7 @@ public class UpdateUserData extends AppCompatActivity {
     Button updateButton;
     ProgressBar progressBar;
 
-    private FirebaseDatabase database;
-    private DatabaseReference ref;
+    private DatabaseReference databaseReference;
     FirebaseUser user;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,8 +37,7 @@ public class UpdateUserData extends AppCompatActivity {
         updateButton = findViewById(R.id.updateButton);
         progressBar = findViewById(R.id.updateProgressBar);
 
-        database = FirebaseDatabase.getInstance();
-        ref = database.getReference("users");
+        databaseReference = FirebaseDatabase.getInstance().getReference("users");
         user = FirebaseAuth.getInstance().getCurrentUser();
 
         updateButton.setOnClickListener(new View.OnClickListener() {
@@ -63,24 +61,24 @@ public class UpdateUserData extends AppCompatActivity {
 
         String userID = user.getUid();
         if(!u1.equals("")){
-            ref.child(userID).child("firstName").setValue(u1);
+            databaseReference.child(userID).child("firstName").setValue(u1);
         }
         if(!u2.equals("")){
-            ref.child(userID).child("lastName").setValue(u2);
+            databaseReference.child(userID).child("lastName").setValue(u2);
         }
         if(!m1.equals("")){
-            ref.child(userID).child("monitor_first_name").setValue(m1);
+            databaseReference.child(userID).child("monitor_first_name").setValue(m1);
         }
         if(!m2.equals("")){
-            ref.child(userID).child("monitor_last_name").setValue(m2);
+            databaseReference.child(userID).child("monitor_last_name").setValue(m2);
         }
 
         if(!uPhone.equals("")){
-            ref.child(userID).child("phone_number").setValue(uPhone);
+            databaseReference.child(userID).child("phone_number").setValue(uPhone);
         }
 
         if(!mPhone.equals("")){
-            ref.child(userID).child("monitor_phone_number").setValue(mPhone);
+            databaseReference.child(userID).child("monitor_phone_number").setValue(mPhone);
         }
 
         progressBar.setVisibility(View.GONE);
