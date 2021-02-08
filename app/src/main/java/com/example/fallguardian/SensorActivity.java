@@ -93,16 +93,7 @@ public class SensorActivity extends AppCompatActivity implements SensorEventList
 
 
     ///communication medium to client server
-    Retrofit retrofit;
-    Client_ACC client_acc;
-    Client_both client_both;
-
-
-    //Tarik wifi ipV6: "https://192.168.1.103:8000/"
-    //"https://app.fakejson.com/"
-    //my phone: "http://192.168.43.180:8000/"
-    //Tarik wifi ipV4: "http://192.168.1.101:8000/"
-    private final String BaseUrl = "http://192.168.1.101:8000/";
+    Communicator communicator;
 
 
 
@@ -114,9 +105,6 @@ public class SensorActivity extends AppCompatActivity implements SensorEventList
     TextView userName, userPhone, monitorName, monitorPhone;
 
 
-    ///regarding sms
-    boolean got_permission_to_send_sms;
-    String phoneNo, message;
 
 
     int prev_response;
@@ -126,19 +114,7 @@ public class SensorActivity extends AppCompatActivity implements SensorEventList
     ///invoke when user is on pause
     private boolean isOnPause;
 
-
-
-    //location information
-    String user_map_location = ""; //[latitude],[longitude]
-    String google_map = "https://maps.google.com/maps?q=";
-    FusedLocationProviderClient fusedLocationClient;
-
-    ///permissions
-    public static final int MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 99;
-
-
-
-
+    LocationAndSMS locationAndSMS;
 
 
 
@@ -172,17 +148,10 @@ public class SensorActivity extends AppCompatActivity implements SensorEventList
         }
 
 
-        retrofit = new Retrofit.Builder()
-                .baseUrl(BaseUrl)
-                .addConverterFactory(GsonConverterFactory.create())
-                .build();
+        ///initialize communicator instance
+        communicator =  new Communicator();
 
-        client_acc = retrofit.create(Client_ACC.class);
-        client_both = retrofit.create(Client_both.class);
-
-
-        fall_detected = false;
-        fall_detection_time = 10000000000000.0;
+        disableFallDetection();
         isOnPause = false;
 
         ///Initializing Sensor Services
@@ -225,10 +194,12 @@ public class SensorActivity extends AppCompatActivity implements SensorEventList
 
                 if(snapshot.exists()){
                     current_elderly_user = snapshot.child(user.getUid()).getValue(Elderly.class);
+                    locationAndSMS.setElderly(current_elderly_user);
                     if(!current_elderly_user.getFirstLogin()){
                         databaseReference.child(user.getUid()).child("firstLogin").setValue(true);
                         isOnPause = false;
                     }
+
 
                         String username = "User: " + current_elderly_user.getFirstName() + " " + current_elderly_user.getLastName();
 
@@ -266,75 +237,26 @@ public class SensorActivity extends AppCompatActivity implements SensorEventList
         isNotificationEnabled = false;
 
 
-        got_permission_to_send_sms = false;
-        ///request permission for sending sms
-        if (ContextCompat.checkSelfPermission(this,
-                Manifest.permission.SEND_SMS)
-                != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this,
-                    new String[]{Manifest.permission.SEND_SMS,Manifest.permission.ACCESS_FINE_LOCATION,Manifest.permission.ACCESS_COARSE_LOCATION,Manifest.permission.ACCESS_BACKGROUND_LOCATION},
-                    MY_PERMISSIONS_REQUEST_SEND_SMS);
-        }
+       ///Initialize locationAndSMS
+       locationAndSMS = new LocationAndSMS(this);
+       ///Ask permissions for location and SMS
+       locationAndSMS.askPermissions();
+
+
 
 
         notificationManager = NotificationManagerCompat.from(this);
 
 
-
-        Bundle extra = getIntent().getExtras();
-
-        fall_detected = false;
-        fall_detection_time = 10000000000000.0;
+        disableFallDetection();
 
 
-        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
+//
 
         Log.d("Activity","USER IS ______________________________TURNED____________________________________ON CREATE");
 
     }
 
-    private void getLocationAndSendSMS(){
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
-                != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION,Manifest.permission.ACCESS_COARSE_LOCATION,Manifest.permission.ACCESS_BACKGROUND_LOCATION}, MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION);
-        }
-        else{
-            Task<Location> locationTask = fusedLocationClient.getLastLocation();
-            locationTask.addOnSuccessListener(new OnSuccessListener<Location>() {
-                @Override
-                public void onSuccess(Location location) {
-                    if(location!=null){
-                        user_map_location = google_map + location.getLatitude() + "," + location.getLongitude();
-                        Log.d(TAG,user_map_location+" ********************************************************************* ");
-                        sendSMSMessage();
-
-                    }
-                    else{
-                        user_map_location = null;
-                        Log.d(TAG,"Location is null ********************************************************************* ");
-
-                        user_map_location = "Location unavailable";
-                        sendSMSMessage();
-                    }
-                }
-            });
-
-            locationTask.addOnFailureListener(new OnFailureListener() {
-                @Override
-                public void onFailure(@NonNull Exception e) {
-                    Log.d(TAG,"Failure in location ********************************************************************* ");
-                }
-            });
-
-            locationTask.addOnCompleteListener(new OnCompleteListener<Location>() {
-                @Override
-                public void onComplete(@NonNull Task<Location> task) {
-
-                }
-            });
-        }
-
-    }
 
 
 
@@ -343,16 +265,15 @@ public class SensorActivity extends AppCompatActivity implements SensorEventList
         super.onStart();
         collect_data = true;
         isOnPause = false;
-        fall_detected = false;
-        fall_detection_time = 10000000000000.0;
+
+        disableFallDetection();
         //if(!fall_detected) Toast.makeText(this,"OFF____________________________________________________________________________OOOOOOOOOOOOOOOOOFFFFFFFFFFFFFFF",Toast.LENGTH_LONG).show();
 
         ///incase user doesnt tap on to pending notification
         if(isNotificationEnabled){
             Toast.makeText(this,"Fall Detected!",Toast.LENGTH_SHORT).show();
             notificationManager.cancel(1);
-            fall_detected = true;
-            fall_detection_time = System.currentTimeMillis() / 1000.0;
+            enableFallDetection();
             initiateFallDialogue();
         }
         isNotificationEnabled = false;
@@ -380,14 +301,13 @@ public class SensorActivity extends AppCompatActivity implements SensorEventList
         }
         else if(item.getItemId() == R.id.emergencyId){
 
-            getLocationAndSendSMS();
-            //Toast.makeText(this,"SMS SENT",Toast.LENGTH_SHORT).show();
+            locationAndSMS.getLocationAndSendSMS();
         }
         else if(item.getItemId()==R.id.updateId){
             collect_data = false;
             finish();
             Intent intent = new Intent(this,UpdateUserData.class);
-            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
             startActivity(intent);
         }
         return super.onOptionsItemSelected(item);
@@ -403,8 +323,6 @@ public class SensorActivity extends AppCompatActivity implements SensorEventList
         if (gyroscope != null) {
             sensorManager.registerListener(SensorActivity.this, gyroscope, SensorManager.SENSOR_DELAY_GAME);  //SensorManager.SENSOR_DELAY_NORMAL
         }
-
-        //locationManager = (LocationManager) getApplicationContext().getSystemService(LOCATION_SERVICE);
         Log.d("Activity","USER IS ______________________________TURNED____________________________________ON PAUSE");
     }
 
@@ -484,14 +402,13 @@ public class SensorActivity extends AppCompatActivity implements SensorEventList
             }
 
             if (fall_detected) {
-                Log.d(TAG,"User fell down and time of falling is __________________________________:           "+fall_detection_time);
+                Log.d(TAG,"User fell down and time of falling is _________________________________________________________:           "+fall_detection_time);
                 ///check if 20 seconds have passed since user hasn't responded to the fall dialogue
                 //user might be injured
                 if (( (System.currentTimeMillis() / 1000.0) - fall_detection_time) >= 20.0) {
-                    fall_detected = false;
-                    fall_detection_time = 10000000000000.0;
+                    disableFallDetection();
 
-                    getLocationAndSendSMS();
+                    locationAndSMS.getLocationAndSendSMS();
                     //Toast.makeText(this,"SMS SENT",Toast.LENGTH_SHORT).show();
 
                     ///app screen is showing
@@ -514,13 +431,16 @@ public class SensorActivity extends AppCompatActivity implements SensorEventList
                     }
                 }
             }
-
-            if(isOnPause){
-                Log.d("pause","USER IS__________________________________ON PAUSE");
-            }
             else{
-                Log.d("pause","USER IS__________________________________NOT ON PAUSE");
+                Log.d(TAG,"User has not fallen down _________________________________________________________:           "+fall_detection_time);
             }
+
+//            if(isOnPause){
+//                Log.d("pause","USER IS__________________________________ON PAUSE");
+//            }
+//            else{
+//                Log.d("pause","USER IS__________________________________NOT ON PAUSE");
+//            }
         }
 
 
@@ -583,7 +503,7 @@ public class SensorActivity extends AppCompatActivity implements SensorEventList
 
     private void createPost_ACC(List<Data_ACC> list) {
 
-        Call<Fall> call = client_acc.GetPostValue_ACC(list);
+        Call<Fall> call = communicator.getClient_acc().GetPostValue_ACC(list);
         call.enqueue(new Callback<Fall>() {
             @Override
             public void onResponse(Call<Fall> call, Response<Fall> response) {
@@ -594,8 +514,7 @@ public class SensorActivity extends AppCompatActivity implements SensorEventList
                         if (prev_response == 0) {
                             Toast.makeText(getApplicationContext(), "Fall Detected!", Toast.LENGTH_LONG).show();
 
-                            fall_detected = true;
-                            fall_detection_time = System.currentTimeMillis() / 1000.0;
+                            enableFallDetection();
 
                             if(!isOnPause){
                                 initiateFallDialogue();
@@ -632,7 +551,7 @@ public class SensorActivity extends AppCompatActivity implements SensorEventList
 
     private void createPost_both(List<Data> list) {
 
-        Call<Fall> call = client_both.GetPostValue_both(list);
+        Call<Fall> call = communicator.getClient_both().GetPostValue_both(list);
         call.enqueue(new Callback<Fall>() {
             @Override
             public void onResponse(Call<Fall> call, Response<Fall> response) {
@@ -641,8 +560,7 @@ public class SensorActivity extends AppCompatActivity implements SensorEventList
                     if (prev_response == 0) {
                         Toast.makeText(getApplicationContext(), "Fall Detected!", Toast.LENGTH_LONG).show();
 
-                        fall_detected = true;
-                        fall_detection_time = System.currentTimeMillis() / 1000.0;
+                        enableFallDetection();
 
                         if(!isOnPause){
                             initiateFallDialogue();
@@ -679,7 +597,8 @@ public class SensorActivity extends AppCompatActivity implements SensorEventList
             Toast.makeText(getApplicationContext(), "Selected Yes, send SMS", Toast.LENGTH_SHORT).show();
             ///Send sms
             if (current_elderly_user != null) {
-                getLocationAndSendSMS();
+                //getLocationAndSendSMS();
+                locationAndSMS.getLocationAndSendSMS();
                 //Toast.makeText(this,"SMS SENT",Toast.LENGTH_SHORT).show();
             }
         } else if (fall.equals("1")) {
@@ -689,19 +608,13 @@ public class SensorActivity extends AppCompatActivity implements SensorEventList
             fallDialogue.dismiss();
         }
 
-        fall_detected = false;
-        fall_detection_time = 100000000000000.0;
+        disableFallDetection();
     }
 
     public void sendNotification(){
 
-//        Bundle notifBundle = new Bundle();
-//        notifBundle.putString("fall_detected","yes");
-
         Intent activityIntent = new Intent(this,SensorActivity.class);
-        //activityIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK |Intent.FLAG_ACTIVITY_CLEAR_TASK);
         activityIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-        //activityIntent.putExtras(notifBundle);
 
         PendingIntent contentIntent = PendingIntent.getActivity(this,0,activityIntent,0);
 
@@ -721,82 +634,15 @@ public class SensorActivity extends AppCompatActivity implements SensorEventList
 
     }
 
-    public void initiateFallDetection(){
+    public void enableFallDetection(){
         fall_detected = true;
         fall_detection_time = System.currentTimeMillis() / 1000.0;
     }
 
     public void disableFallDetection(){
         fall_detected = false;
-        fall_detection_time = 10000000000000.0;
+        fall_detection_time = 100000000000000.0;
     }
-
-
-
-    protected void sendSMSMessage() {
-        try {
-            phoneNo = current_elderly_user.getMonitor_phone_number();
-            message = current_elderly_user.getFirstName()+" "+current_elderly_user.getLastName()+" fell down and might be injured"+" at location: "+user_map_location+" .";
-            if (ContextCompat.checkSelfPermission(this,
-                    Manifest.permission.SEND_SMS)
-                    != PackageManager.PERMISSION_GRANTED) {
-                ActivityCompat.requestPermissions(this,
-                        new String[]{Manifest.permission.SEND_SMS,Manifest.permission.ACCESS_FINE_LOCATION,Manifest.permission.ACCESS_COARSE_LOCATION,Manifest.permission.ACCESS_BACKGROUND_LOCATION},
-                        MY_PERMISSIONS_REQUEST_SEND_SMS);
-            }
-            else{
-                    SmsManager smsManager = SmsManager.getDefault();
-                    smsManager.sendTextMessage(phoneNo, null, message, null, null);
-                    Toast.makeText(getApplicationContext(), "SMS sent.", Toast.LENGTH_LONG).show();
-                    Log.d(TAG,"SMS SENT ______________________________________________________________");
-            }
-
-        }
-        catch(NullPointerException e){
-            Toast.makeText(getApplicationContext(),
-                            "SMS faild, please try again.", Toast.LENGTH_LONG).show();
-            System.out.println("Exception Caught");
-        }
-
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode,String permissions[], int[] grantResults) {
-        switch (requestCode) {
-            case MY_PERMISSIONS_REQUEST_SEND_SMS: {
-                if (grantResults.length > 0
-                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    ///when invoked at the start of app, donot send any sms just apply permissions
-                    if(!got_permission_to_send_sms){
-                        got_permission_to_send_sms = true;
-                    }
-                    else{
-                        sendSMSMessage();
-                    }
-                } else {
-                    Toast.makeText(getApplicationContext(),
-                            "SMS faild, please try again.", Toast.LENGTH_LONG).show();
-                    return;
-                }
-            }
-            case MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION: {
-                // If request is cancelled, the result arrays are empty.
-                if (grantResults.length > 0
-                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-
-                } else {
-
-                    // permission denied, boo! Disable the
-                    // functionality that depends on this permission.
-
-                }
-                return;
-            }
-
-        }
-
-    }
-
 
 
 }
