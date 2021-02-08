@@ -32,8 +32,6 @@
             android:name=".SensorActivity"
             android:launchMode="singleTask"></activity>
 
-        <receiver android:name=".NotificationReceiver" />
-        <receiver android:name=".NotificationReceiverYes" />
     </application>
 
 </manifest>
