@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">Fall Guardian</string>
+    <string name="start_button">START</string>
+    <string name="log_in">LOG IN</string>
+    <string name="not_registered">Are you not registered? Sign Up</string>
+    <string name="register">Register</string>
+</resources>
