@@ -10,6 +10,7 @@ import android.util.Log;
 public class NotifApp extends Application {
 
     public static final String CHANNEL_1_ID = "channel1";
+    public static final String CHANNEL_2_ID = "channel2";
     @Override
     public void onCreate() {
         super.onCreate();
@@ -37,8 +38,16 @@ public class NotifApp extends Application {
             );
             channel1.setDescription("This is Chanel 1");
 
+            NotificationChannel channel2 = new NotificationChannel(
+                    CHANNEL_2_ID,
+                    "Channel 2",
+                    NotificationManager.IMPORTANCE_DEFAULT
+            );
+            channel2.setDescription("This is Chanel 2");
+
             NotificationManager manager = getSystemService(NotificationManager.class);
             manager.createNotificationChannel(channel1);
+            manager.createNotificationChannel(channel2);
         }
     }
 }

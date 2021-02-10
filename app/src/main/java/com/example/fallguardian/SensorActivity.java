@@ -191,7 +191,28 @@ public class SensorActivity extends AppCompatActivity implements SensorEventList
         fallDetector = new FallDetector(this);
 
 
-        Log.d("Activity","USER IS ______________________________TURNED____________________________________ON CREATE");
+
+
+        Log.i("Activity","USER IS ______________________________TURNED____________________________________ON CREATE");
+
+        //startService();
+
+
+        Bundle extra = new Bundle();
+
+
+        if(extra!=null){
+
+                Log.i(TAG,"+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ non null "+extra.toString());
+//                if(not.equals("fall")){
+//                    Toast.makeText(this,"Fall Detected!",Toast.LENGTH_SHORT).show();
+//                    fallDetector.cancelNotification(1);
+//                    fallDetector.enableFallDetection();
+//                    fallDetector.initiateFallDialogue();
+//                }
+        }
+
+
 
     }
 
@@ -205,7 +226,6 @@ public class SensorActivity extends AppCompatActivity implements SensorEventList
         isOnPause = false;
 
         fallDetector.disableFallDetection();
-        //if(!fall_detected) Toast.makeText(this,"OFF____________________________________________________________________________OOOOOOOOOOOOOOOOOFFFFFFFFFFFFFFF",Toast.LENGTH_LONG).show();
 
         ///incase user doesnt tap on to pending notification
         if(fallDetector.getNotificationEnabled()){
@@ -216,7 +236,7 @@ public class SensorActivity extends AppCompatActivity implements SensorEventList
         }
         //isNotificationEnabled = false;
         fallDetector.setNotificationEnabled(false);
-        Log.d("Activity","USER IS ______________________________TURNED____________________________________ON START");
+        Log.i("Activity","USER IS ______________________________TURNED____________________________________ON START");
     }
 
 
@@ -231,9 +251,11 @@ public class SensorActivity extends AppCompatActivity implements SensorEventList
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         if (item.getItemId() == R.id.signOutMenuId) {
+            //stopService();
             FirebaseAuth.getInstance().signOut();
             collect_data = false;
             finish();
+
 
             Intent intent = new Intent(SensorActivity.this, LogInActivity.class);
             startActivity(intent);
@@ -254,6 +276,7 @@ public class SensorActivity extends AppCompatActivity implements SensorEventList
 
 
     protected void onPause() {
+
         super.onPause();
 
         isOnPause = true;
@@ -262,9 +285,24 @@ public class SensorActivity extends AppCompatActivity implements SensorEventList
         if (gyroscope != null) {
             sensorManager.registerListener(SensorActivity.this, gyroscope, SensorManager.SENSOR_DELAY_GAME);  //SensorManager.SENSOR_DELAY_NORMAL
         }
-        Log.d("Activity","USER IS ______________________________TURNED____________________________________ON PAUSE");
+        Log.i("Activity","USER IS ______________________________TURNED____________________________________ON PAUSE");
     }
 
+    protected void onDestroy(){
+        super.onDestroy();
+        Log.i("Activity","USER IS ______________________________TURNED____________________________________ON DESTROY");
+    }
+
+    private void startService(){
+        Toast.makeText(this,"Service Started",Toast.LENGTH_SHORT).show();
+        Intent intent = new Intent(this,BackgroundService.class);
+        startService(intent);
+    }
+    private void stopService(){
+        Toast.makeText(this,"Service Stopped",Toast.LENGTH_SHORT).show();
+        Intent intent = new Intent(this,BackgroundService.class);
+        startService(intent);
+    }
 
 
 
@@ -330,6 +368,13 @@ public class SensorActivity extends AppCompatActivity implements SensorEventList
             }
 
             fallDetector.countFallTimer(isOnPause);
+
+            if(isOnPause){
+                Log.i(TAG, "onSensorChanged: ________________________________________IS ON PAUSE");
+            }
+            if (fallDetector.isNotificationEnabled){
+                Log.i(TAG, "onSensorChanged: ________________________________________Notification Enabled");
+            }
         }
 
 
@@ -346,11 +391,10 @@ public class SensorActivity extends AppCompatActivity implements SensorEventList
         Data_ACC data = new Data_ACC(AX, AY, AZ, gravity[0], gravity[1], gravity[2], ts);
         list_ACC.add(data);
 
-        curr_time = System.currentTimeMillis() / 1000.0;
 
 
 
-        if (curr_time - start_time > 6.0) {
+        if ((System.currentTimeMillis() / 1000.0) - start_time > 6.0) {
             int index = binary_ACC(start_time, list_ACC, list_ACC.size());
             List<Data_ACC> temp;
             temp = list_ACC;
@@ -373,9 +417,7 @@ public class SensorActivity extends AppCompatActivity implements SensorEventList
         list_both.add(data);
 
 
-        curr_time = System.currentTimeMillis() / 1000.0;
-
-        if (curr_time - start_time > 6.0) {
+        if ((System.currentTimeMillis() / 1000.0) - start_time > 6.0) {
             int index = binary_both(start_time, list_both, list_both.size());
 
 
@@ -399,7 +441,7 @@ public class SensorActivity extends AppCompatActivity implements SensorEventList
                 fallDetector.locationAndSMS.getLocationAndSendSMS();
             }
         } else if (fall.equals("1")) {
-            Toast.makeText(this, "Incase of emergency press 'Emergency Distress Signal' option from the menu.", Toast.LENGTH_LONG).show();
+            Toast.makeText(this, "Incase of emergency press 'Emergency Distress Call' option from the menu.", Toast.LENGTH_LONG).show();
         } else if (fall.equals("0")) {
             Toast.makeText(this, "Better safe than sorry!", Toast.LENGTH_SHORT).show();
             fallDetector.dismissFallDialogue();

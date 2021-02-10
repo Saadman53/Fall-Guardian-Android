@@ -89,6 +89,7 @@ class FallDetector {
     public void sendNotification(){
 
         Intent activityIntent = new Intent(context,SensorActivity.class);
+        activityIntent.putExtra("flag","fall");
         activityIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
 
         PendingIntent contentIntent = PendingIntent.getActivity(context,0,activityIntent,0);
