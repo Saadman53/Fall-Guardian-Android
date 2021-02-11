@@ -13,10 +13,13 @@ import android.hardware.SensorManager;
 
 import android.os.Bundle;
 
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -46,21 +49,9 @@ import javax.net.ssl.SSLContext;
 import static com.example.fallguardian.LocationAndSMS.PERMISSIONS;
 
 
-public class SensorActivity extends AppCompatActivity implements SensorEventListener, FallDialogue.FallDialogueListener {
+public class SensorActivity extends AppCompatActivity implements FallDialogue.FallDialogueListener {
 
     private static final String TAG = "LogInActivity";
-
-    ///Initializing sensors
-    private SensorManager sensorManager;
-    private Sensor accelerometer;
-    private Sensor gyroscope;
-
-    ///initializing gravity vector
-    private double accelerometer_values[] = {0.0, 0.0, 0.0};
-    private double gravity[] = {0.0, 0.0, 0.0};
-    private boolean collect_data;
-    double start_time, curr_time;
-
 
 
     ///Database
@@ -84,12 +75,15 @@ public class SensorActivity extends AppCompatActivity implements SensorEventList
     ///display informations
     TextView userName, userPhone, monitorName, monitorPhone;
 
-    FallDetector fallDetector;
 
     ///invoke when user is on pause
     private boolean isOnPause;
 
 
+    Button emergencyButton;
+
+
+    LocationAndSMS locationAndSMS;
 
 
     @Override
@@ -112,23 +106,8 @@ public class SensorActivity extends AppCompatActivity implements SensorEventList
 
         isOnPause = false;
 
-        ///Initializing Sensor Services
-        sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
 
-        ///registering Accelerometer
-        accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
-        sensorManager.registerListener(SensorActivity.this, accelerometer, SensorManager.SENSOR_DELAY_GAME);  //SensorManager.SENSOR_DELAY_NORMAL
-        gyroscope = sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
-        if (gyroscope != null) {
-            sensorManager.registerListener(SensorActivity.this, gyroscope, SensorManager.SENSOR_DELAY_GAME);  //SensorManager.SENSOR_DELAY_NORMAL
-        }
-
-
-        collect_data = true;
         isOnPause = false;
-        list_ACC = new ArrayList<Data_ACC>();
-        list_both = new ArrayList<Data>();
-        Toast.makeText(getApplicationContext(), "Data is being collected", Toast.LENGTH_SHORT).show();
 
         user = FirebaseAuth.getInstance().getCurrentUser();
 
@@ -150,25 +129,26 @@ public class SensorActivity extends AppCompatActivity implements SensorEventList
 
                 if(snapshot.exists()){
                     current_elderly_user = snapshot.child(user.getUid()).getValue(Elderly.class);
-                    //locationAndSMS.setElderly(current_elderly_user);
-                    fallDetector.setElderly(current_elderly_user);
+                    locationAndSMS.setElderly(current_elderly_user);
+
 
                     if(!current_elderly_user.getFirstLogin()){
                         databaseReference.child(user.getUid()).child("firstLogin").setValue(true);
                         isOnPause = false;
+                        PreferenceManager.getDefaultSharedPreferences(SensorActivity.this).edit().putBoolean("isActive", true).apply();
                     }
 
 
-                        String username = "User: " + current_elderly_user.getFirstName() + " " + current_elderly_user.getLastName();
+                    String username = "User: " + current_elderly_user.getFirstName() + " " + current_elderly_user.getLastName();
 
-                        String userphone = "User no: " + current_elderly_user.getPhone_number();
-                        String monitorname = "User's Monitor: " + current_elderly_user.getMonitor_first_name() + " " + current_elderly_user.getMonitor_last_name();
-                        String monitorphone = "Monitor's Phone: " + current_elderly_user.getMonitor_phone_number();
+                    String userphone = "User no: " + current_elderly_user.getPhone_number();
+                    String monitorname = "User's Monitor: " + current_elderly_user.getMonitor_first_name() + " " + current_elderly_user.getMonitor_last_name();
+                    String monitorphone = "Monitor's Phone: " + current_elderly_user.getMonitor_phone_number();
 
-                        userName.setText(username);
-                        userPhone.setText(userphone);
-                        monitorName.setText(monitorname);
-                        monitorPhone.setText(monitorphone);
+                    userName.setText(username);
+                    userPhone.setText(userphone);
+                    monitorName.setText(monitorname);
+                    monitorPhone.setText(monitorphone);
                     Toast.makeText(SensorActivity.this,"Retrieved user data",Toast.LENGTH_SHORT).show();
                 }
                 else{
@@ -188,31 +168,45 @@ public class SensorActivity extends AppCompatActivity implements SensorEventList
 
         });
 
-        fallDetector = new FallDetector(this);
+        locationAndSMS = new LocationAndSMS(this);
+        locationAndSMS.askPermissions();
+
+
+        emergencyButton = findViewById(R.id.emergencyID);
+
+        emergencyButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                locationAndSMS.getLocationAndSendSMS();
+            }
+        });
+
 
 
 
 
         Log.i("Activity","USER IS ______________________________TURNED____________________________________ON CREATE");
 
-        //startService();
 
+        if(getIntent().getExtras()!=null){
+            String sendSMS = getIntent().getStringExtra("sendSMS");
 
-        Bundle extra = new Bundle();
-
-
-        if(extra!=null){
-
-                Log.i(TAG,"+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ non null "+extra.toString());
-//                if(not.equals("fall")){
-//                    Toast.makeText(this,"Fall Detected!",Toast.LENGTH_SHORT).show();
-//                    fallDetector.cancelNotification(1);
-//                    fallDetector.enableFallDetection();
-//                    fallDetector.initiateFallDialogue();
-//                }
+            if(sendSMS!=null){
+                Log.i("RECEIVER", "onReceive ACTIVITY: ______________________________"+sendSMS);
+                if(sendSMS.equals("YES")){
+                    Intent intent = new Intent(this,BackgroundService.class);
+                    intent.putExtra("Response","yes");
+                    Toast.makeText(this,"Send SMS",Toast.LENGTH_SHORT).show();
+                    startService(intent);
+                }
+                else if(sendSMS.equals("NO")){
+                    Intent intent = new Intent(this,BackgroundService.class);
+                    intent.putExtra("Response","no");
+                    Toast.makeText(this,"Dont Send SMS",Toast.LENGTH_SHORT).show();
+                    startService(intent);
+                }
+            }
         }
-
-
 
     }
 
@@ -222,23 +216,38 @@ public class SensorActivity extends AppCompatActivity implements SensorEventList
     @Override
     protected void onStart() {
         super.onStart();
-        collect_data = true;
-        isOnPause = false;
+        PreferenceManager.getDefaultSharedPreferences(this).edit().putBoolean("isActive", true).apply();
 
-        fallDetector.disableFallDetection();
+        Log.i("ACTIVITY CYCLE", "________________________________________ON START");
 
-        ///incase user doesnt tap on to pending notification
-        if(fallDetector.getNotificationEnabled()){
-            Toast.makeText(this,"Fall Detected!",Toast.LENGTH_SHORT).show();
-            fallDetector.cancelNotification(1);
-            fallDetector.enableFallDetection();
-            fallDetector.initiateFallDialogue();
+        if(getIntent().getExtras()!=null){
+            String sendSMS = getIntent().getStringExtra("sendSMS");
+
+            if(sendSMS!=null){
+                Log.i("RECEIVER", "onReceive ACTIVITY: ______________________________"+sendSMS);
+                if(sendSMS.equals("YES")){
+                    Intent intent = new Intent(this,BackgroundService.class);
+                    intent.putExtra("Response","yes");
+                    Toast.makeText(this,"Send SMS",Toast.LENGTH_SHORT).show();
+                    startService(intent);
+                }
+                else if(sendSMS.equals("NO")){
+                    Intent intent = new Intent(this,BackgroundService.class);
+                    intent.putExtra("Response","no");
+                    Toast.makeText(this,"Dont Send SMS",Toast.LENGTH_SHORT).show();
+                    startService(intent);
+                }
+            }
         }
-        //isNotificationEnabled = false;
-        fallDetector.setNotificationEnabled(false);
-        Log.i("Activity","USER IS ______________________________TURNED____________________________________ON START");
     }
 
+    @Override
+    protected void onRestart() {
+        super.onRestart();
+        Log.i("ACTIVITY CYCLE", "________________________________________ON RESTART");
+
+        locationAndSMS.askPermissions();
+    }
 
     ///handling the options menu here
     @Override
@@ -250,22 +259,22 @@ public class SensorActivity extends AppCompatActivity implements SensorEventList
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        if (item.getItemId() == R.id.signOutMenuId) {
-            //stopService();
+       if (item.getItemId() == R.id.signOutMenuId) {
+            stopService();
             FirebaseAuth.getInstance().signOut();
-            collect_data = false;
             finish();
 
 
             Intent intent = new Intent(SensorActivity.this, LogInActivity.class);
             startActivity(intent);
         }
-        else if(item.getItemId() == R.id.emergencyId){
-            //locationAndSMS.getLocationAndSendSMS();
-            fallDetector.locationAndSMS.getLocationAndSendSMS();
+        else if(item.getItemId() == R.id.startSystemId){
+            startService();
+        }
+        else if(item.getItemId() == R.id.stopSystemId){
+            stopService();
         }
         else if(item.getItemId()==R.id.updateId){
-            collect_data = false;
             finish();
             Intent intent = new Intent(this,UpdateUserData.class);
             intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
@@ -281,16 +290,27 @@ public class SensorActivity extends AppCompatActivity implements SensorEventList
 
         isOnPause = true;
 
-        sensorManager.registerListener(SensorActivity.this, accelerometer, SensorManager.SENSOR_DELAY_GAME);  //SensorManager.SENSOR_DELAY_NORMAL
-        if (gyroscope != null) {
-            sensorManager.registerListener(SensorActivity.this, gyroscope, SensorManager.SENSOR_DELAY_GAME);  //SensorManager.SENSOR_DELAY_NORMAL
-        }
-        Log.i("Activity","USER IS ______________________________TURNED____________________________________ON PAUSE");
+        PreferenceManager.getDefaultSharedPreferences(this).edit().putBoolean("isActive", false).apply();
+
+
+        Log.i("ACTIVITY CYCLE", "________________________________________ON PAUSE");
+
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        PreferenceManager.getDefaultSharedPreferences(this).edit().putBoolean("isActive", true).apply();
+        locationAndSMS.askPermissions();
+        Log.i("ACTIVITY CYCLE", "________________________________________ON RESUME");
+
     }
 
     protected void onDestroy(){
         super.onDestroy();
-        Log.i("Activity","USER IS ______________________________TURNED____________________________________ON DESTROY");
+        PreferenceManager.getDefaultSharedPreferences(this).edit().putBoolean("isActive", false).apply();
+        Log.i("ACTIVITY CYCLE", "________________________________________ON DESTROY");
+
     }
 
     private void startService(){
@@ -301,167 +321,27 @@ public class SensorActivity extends AppCompatActivity implements SensorEventList
     private void stopService(){
         Toast.makeText(this,"Service Stopped",Toast.LENGTH_SHORT).show();
         Intent intent = new Intent(this,BackgroundService.class);
+        stopService(intent);
+    }
+
+    @Override
+    public void applyText(String fall) {
+        Intent intent = new Intent(this,BackgroundService.class);
+        intent.putExtra("Response",fall);
         startService(intent);
     }
 
 
 
-    private int binary_ACC(double time, List<Data_ACC> list, int length) {
-        int l = -1;
-        int h = length;
 
-
-        while ((l + 1) < h) {
-            int mid = (l + h) / 2;
-            if ((list.get(mid).getTimestamp() / 1000.0) < ((int) time + 1)) {
-                l = mid;
-            } else {
-                h = mid;
-            }
-        }
-        return l;
-    }
-
-    private int binary_both(double time, List<Data> list, int length) {
-        int l = -1;
-        int h = length;
-
-
-        while ((l + 1) < h) {
-            int mid = (l + h) / 2;
-            if ((list.get(mid).getTimestamp() / 1000.0) < ((int) time + 1)) {
-                l = mid;
-            } else {
-                h = mid;
-            }
-        }
-        return l;
-    }
-
-
-
-    @Override
-    public void onAccuracyChanged(Sensor sensor, int accuracy) {
-
-    }
-
-    @Override
-    public void onSensorChanged(SensorEvent event) {
-        if (collect_data) {
-            ///if gyroscope is absent
-            if (gyroscope == null) {
-                ///invoke only for accelerometer
-
-                accelerometer_values[0] = event.values[0];
-                accelerometer_values[1] = event.values[1];
-                accelerometer_values[2] = event.values[2];
-
-                addData_ACC(accelerometer_values[0], accelerometer_values[1], accelerometer_values[2]);
-            } else {
-                if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
-                    accelerometer_values[0] = event.values[0];
-                    accelerometer_values[1] = event.values[1];
-                    accelerometer_values[2] = event.values[2];
-                } else if (event.sensor.getType() == Sensor.TYPE_GYROSCOPE) {
-                    addData_both(accelerometer_values[0], accelerometer_values[1], accelerometer_values[2], event.values[0], event.values[1], event.values[2]);
-                }
-            }
-
-            fallDetector.countFallTimer(isOnPause);
-
-            if(isOnPause){
-                Log.i(TAG, "onSensorChanged: ________________________________________IS ON PAUSE");
-            }
-            if (fallDetector.isNotificationEnabled){
-                Log.i(TAG, "onSensorChanged: ________________________________________Notification Enabled");
-            }
-        }
-
-
-    }
-
-    ///invoke for accelerometer only
-    public void addData_ACC(double AX, double AY, double AZ) {
-        //String key = databaseReference.push().getKey();
-        Long ts = System.currentTimeMillis();
-
-        gravity[0] = 0.8 * gravity[0] + 0.2 * AX;
-        gravity[1] = 0.8 * gravity[1] + 0.2 * AY;
-        gravity[2] = 0.8 * gravity[2] + 0.2 * AZ;
-        Data_ACC data = new Data_ACC(AX, AY, AZ, gravity[0], gravity[1], gravity[2], ts);
-        list_ACC.add(data);
-
-
-
-
-        if ((System.currentTimeMillis() / 1000.0) - start_time > 6.0) {
-            int index = binary_ACC(start_time, list_ACC, list_ACC.size());
-            List<Data_ACC> temp;
-            temp = list_ACC;
-
-            list_ACC = list_ACC.subList(index + 1, list_ACC.size());
-            start_time = (list_ACC.get(0).getTimestamp()) / 1000.0;
-            fallDetector.createPost_ACC(temp,isOnPause);
-
-        }
-    }
-
-    public void addData_both(double AX, double AY, double AZ, double GX, double GY, double GZ) {
-        //String key = databaseReference.push().getKey();
-        Long ts = System.currentTimeMillis();
-
-        gravity[0] = 0.8 * gravity[0] + 0.2 * AX;
-        gravity[1] = 0.8 * gravity[1] + 0.2 * AY;
-        gravity[2] = 0.8 * gravity[2] + 0.2 * AZ;
-        Data data = new Data(AX, AY, AZ, GX, GY, GZ, gravity[0], gravity[1], gravity[2], ts);
-        list_both.add(data);
-
-
-        if ((System.currentTimeMillis() / 1000.0) - start_time > 6.0) {
-            int index = binary_both(start_time, list_both, list_both.size());
-
-
-            List<Data> temp;
-            temp = list_both;
-            list_both = list_both.subList(index + 1, list_both.size());
-            start_time = (list_both.get(0).getTimestamp()) / 1000.0;
-
-            fallDetector.createPost_both(temp,isOnPause);
-
-        }
-
-    }
-
-
-    @Override
-    public void applyText(String fall) {
-        if (fall.equals("2")) {
-            ///Send sms
-            if (current_elderly_user != null) {
-                fallDetector.locationAndSMS.getLocationAndSendSMS();
-            }
-        } else if (fall.equals("1")) {
-            Toast.makeText(this, "Incase of emergency press 'Emergency Distress Call' option from the menu.", Toast.LENGTH_LONG).show();
-        } else if (fall.equals("0")) {
-            Toast.makeText(this, "Better safe than sorry!", Toast.LENGTH_SHORT).show();
-            fallDetector.dismissFallDialogue();
-        }
-
-        fallDetector.disableFallDetection();
-    }
     @Override
     public void onRequestPermissionsResult(int requestCode,String permissions[], int[] grantResults) {
         switch (requestCode) {
             case PERMISSIONS:{
                 if (grantResults.length > 0
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    if(fallDetector.isFall_detected()){
-                        fallDetector.locationAndSMS.sendSMSMessage();
-                    }
                 } else {
-                    Toast.makeText(this,
-                            "SMS faild, please try again.", Toast.LENGTH_LONG).show();
-                    return;
+
                 }
             }
 

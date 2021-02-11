@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:padding="20dp"
-    android:background="#22b2ff"
+    android:background="#FEFFFF"
     android:orientation="vertical"
     tools:context=".LogInActivity"
     >
@@ -20,8 +20,8 @@
         android:id="@+id/SignupFirstName"
         android:inputType="textEmailAddress"
         android:hint="Your First Name"
-        android:textColorHint="#ffffff"
-        android:textColor="#ffffff"
+        android:textColorHint="@android:color/black"
+        android:textColor="@android:color/black"
         android:layout_weight="1"
         />
 
@@ -32,8 +32,8 @@
         android:id="@+id/SignupLastName"
         android:inputType="textEmailAddress"
         android:hint="Your Last Name"
-        android:textColorHint="#ffffff"
-        android:textColor="#ffffff"
+        android:textColorHint="@android:color/black"
+        android:textColor="@android:color/black"
         android:layout_weight="1"
         />
 
@@ -46,8 +46,8 @@
         android:id="@+id/SignupEmail"
         android:inputType="textEmailAddress"
         android:hint="Enter Your Email"
-        android:textColorHint="#ffffff"
-        android:textColor="#ffffff"
+        android:textColorHint="@android:color/black"
+        android:textColor="@android:color/black"
         />
     <LinearLayout android:layout_width="fill_parent"
         android:layout_height="wrap_content"
@@ -60,8 +60,8 @@
         android:id="@+id/SignupPassword"
         android:inputType="textPassword"
         android:hint="Enter Password"
-        android:textColorHint="#ffffff"
-        android:textColor="#ffffff"
+        android:textColorHint="@android:color/black"
+        android:textColor="@android:color/black"
         android:layout_weight="1"
         />
         <EditText
@@ -71,8 +71,8 @@
             android:id="@+id/SignupConfirmPassword"
             android:inputType="textPassword"
             android:hint="Confirm Password"
-            android:textColorHint="#ffffff"
-            android:textColor="#ffffff"
+            android:textColorHint="@android:color/black"
+            android:textColor="@android:color/black"
             android:layout_weight="1"
             />
     </LinearLayout>
@@ -83,8 +83,8 @@
         android:id="@+id/SignupMobile"
         android:inputType="phone"
         android:hint="Your Mobile Number"
-        android:textColorHint="#ffffff"
-        android:textColor="#ffffff"
+        android:textColorHint="@android:color/black"
+        android:textColor="@android:color/black"
         />
 
     <LinearLayout android:layout_width="fill_parent"
@@ -98,8 +98,8 @@
         android:id="@+id/SignupMonitorFirstName"
         android:inputType="text"
         android:hint="Monitor's First Name"
-        android:textColorHint="#ffffff"
-        android:textColor="#ffffff"
+        android:textColorHint="@android:color/black"
+        android:textColor="@android:color/black"
         android:layout_weight="1"
         />
 
@@ -110,8 +110,8 @@
         android:id="@+id/SignupMonitorLastName"
         android:inputType="text"
         android:hint="Monitor's Last Name"
-        android:textColorHint="#ffffff"
-        android:textColor="#ffffff"
+        android:textColorHint="@android:color/black"
+        android:textColor="@android:color/black"
         android:layout_weight="1"
         />
     </LinearLayout>
@@ -123,8 +123,8 @@
         android:id="@+id/SignupMonitorMobile"
         android:inputType="phone"
         android:hint="Monitor's Mobile Number "
-        android:textColorHint="#ffffff"
-        android:textColor="#ffffff"
+        android:textColorHint="@android:color/black"
+        android:textColor="@android:color/black"
         />
     <Button
         android:layout_marginTop="20dp"

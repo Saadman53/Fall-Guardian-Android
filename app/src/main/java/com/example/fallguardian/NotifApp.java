@@ -11,6 +11,7 @@ public class NotifApp extends Application {
 
     public static final String CHANNEL_1_ID = "channel1";
     public static final String CHANNEL_2_ID = "channel2";
+    public static final String CHANNEL_3_ID = "channel3";
     @Override
     public void onCreate() {
         super.onCreate();
@@ -45,9 +46,18 @@ public class NotifApp extends Application {
             );
             channel2.setDescription("This is Chanel 2");
 
+
+            NotificationChannel channel3 = new NotificationChannel(
+                    CHANNEL_3_ID,
+                    "Channel 3",
+                    NotificationManager.IMPORTANCE_HIGH
+            );
+            channel3.setDescription("This is Chanel 3");
+
             NotificationManager manager = getSystemService(NotificationManager.class);
             manager.createNotificationChannel(channel1);
             manager.createNotificationChannel(channel2);
+            manager.createNotificationChannel(channel3);
         }
     }
 }

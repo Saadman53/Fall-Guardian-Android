@@ -2,7 +2,12 @@ package com.example.fallguardian;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.app.Service;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.telephony.SmsManager;
@@ -11,6 +16,8 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
+import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationManagerCompat;
 import androidx.core.content.ContextCompat;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -20,6 +27,8 @@ import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 
+import static com.example.fallguardian.NotifApp.CHANNEL_2_ID;
+import static com.example.fallguardian.NotifApp.CHANNEL_3_ID;
 
 
 class LocationAndSMS {
@@ -64,9 +73,30 @@ class LocationAndSMS {
             if (ContextCompat.checkSelfPermission(context,
                     Manifest.permission.SEND_SMS)
                     != PackageManager.PERMISSION_GRANTED) {
-                ActivityCompat.requestPermissions((Activity) context,
-                        new String[]{Manifest.permission.SEND_SMS,Manifest.permission.ACCESS_FINE_LOCATION,Manifest.permission.ACCESS_COARSE_LOCATION,Manifest.permission.ACCESS_BACKGROUND_LOCATION},
-                        PERMISSIONS);
+                if (context instanceof Activity) {
+                    // handle activity case
+                    ActivityCompat.requestPermissions((Activity) context,
+                            new String[]{Manifest.permission.SEND_SMS,Manifest.permission.ACCESS_FINE_LOCATION,Manifest.permission.ACCESS_COARSE_LOCATION,Manifest.permission.ACCESS_BACKGROUND_LOCATION},
+                            PERMISSIONS);
+                } else if (context instanceof Service){
+                    // handle service case
+                    Intent activityIntent = new Intent(context,SensorActivity.class);
+                    PendingIntent contentIntent = PendingIntent.getActivity(context,0,activityIntent,0);
+
+                    NotificationManagerCompat notificationManagerCompat = NotificationManagerCompat.from(context);
+
+                    Notification notification = new NotificationCompat.Builder(context,CHANNEL_3_ID)
+                            .setContentTitle("ALLOW PERMISSIONS!")
+                            .setContentText("Please allow permissions for accessing Location & sending SMS!")
+                            .setSmallIcon(R.drawable.ic_service)
+                            .setContentIntent(contentIntent)
+                            .setAutoCancel(true)
+                            .build();
+
+                    notificationManagerCompat.notify(3,notification);
+
+                }
+
             }
             else{
                 SmsManager smsManager = SmsManager.getDefault();

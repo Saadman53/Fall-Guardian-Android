@@ -247,7 +247,7 @@ class FallDetector {
             }
         }
         else{
-           // Log.d("SensorActivity","User has not fallen down _________________________________________________________:           "+fall_detection_time);
+            // Log.d("SensorActivity","User has not fallen down _________________________________________________________:           "+fall_detection_time);
         }
     }
 
