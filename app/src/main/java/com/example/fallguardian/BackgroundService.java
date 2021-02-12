@@ -37,7 +37,11 @@ import com.squareup.okhttp.OkHttpClient;
 
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -75,6 +79,9 @@ public class BackgroundService extends Service implements SensorEventListener{
     ///current user data
 
     Elderly current_elderly_user;
+    int age;
+
+    int timeLimit = 25;
 
     ///display informations
     TextView userName, userPhone, monitorName, monitorPhone;
@@ -89,11 +96,17 @@ public class BackgroundService extends Service implements SensorEventListener{
 
 
 
+
+
     ///dialogue box
     private FallDialogue fallDialogue;
     ///Notificaiton
     public NotificationManagerCompat notificationManager;
     boolean isNotificationEnabled;
+
+    ///Database
+    DatabaseReference databaseReference;
+    FirebaseUser user;
 
 
 
@@ -142,11 +155,56 @@ public class BackgroundService extends Service implements SensorEventListener{
         notificationManager = NotificationManagerCompat.from(this);
 
 
+        getDataFromDataBase();
 
-        ///Database
-        DatabaseReference databaseReference;
-        FirebaseUser user;
 
+
+    }
+
+    private int getAge(String dobString){
+
+        Date date = null;
+        SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy");
+        try {
+            date = sdf.parse(dobString);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+
+        if(date == null) return 0;
+
+        Calendar dob = Calendar.getInstance();
+        Calendar today = Calendar.getInstance();
+
+        dob.setTime(date);
+
+        int year = dob.get(Calendar.YEAR);
+        int month = dob.get(Calendar.MONTH);
+        int day = dob.get(Calendar.DAY_OF_MONTH);
+
+        dob.set(year, month+1, day);
+
+        int age = today.get(Calendar.YEAR) - dob.get(Calendar.YEAR);
+
+        if (today.get(Calendar.DAY_OF_YEAR) < dob.get(Calendar.DAY_OF_YEAR)){
+            age--;
+        }
+
+
+
+        return age;
+    }
+
+    void setTimeLimit(){
+        if(age<=40){
+            timeLimit = 25;
+        }
+        else{
+            timeLimit = 25+((age-40)/10)*5;
+        }
+    }
+
+    void getDataFromDataBase(){
         user = FirebaseAuth.getInstance().getCurrentUser();
 
 
@@ -159,7 +217,12 @@ public class BackgroundService extends Service implements SensorEventListener{
 
                 if(snapshot.exists()){
                     current_elderly_user = snapshot.child(user.getUid()).getValue(Elderly.class);
+                    age = getAge(current_elderly_user.getDob());
+                    setTimeLimit();
+
+                    Log.i("TAG", "onDataChange: ____________________________age :"+age);
                     locationAndSMS.setElderly(current_elderly_user);
+                    Toast.makeText(BackgroundService.this,"User Data Updated In Service.",Toast.LENGTH_LONG).show();
                 }
                 else{
                     Toast.makeText(BackgroundService.this,"Couldn't retrieve user data",Toast.LENGTH_SHORT).show();
@@ -302,6 +365,7 @@ public class BackgroundService extends Service implements SensorEventListener{
 
         if((intent.getExtras()!=null)){
             String value = intent.getStringExtra("Response");
+            String any_updates = intent.getStringExtra("info");
             if(value!=null){
                 if(value.equals("YES")){
                     disableFallDetection();
@@ -321,8 +385,12 @@ public class BackgroundService extends Service implements SensorEventListener{
                 }
 
             }
-            else{
-
+            if(any_updates!=null){
+                if(any_updates.equals("updated")){
+                    getDataFromDataBase();
+                    //Toast.makeText(this,"Data updated in Service",Toast.LENGTH_SHORT).show();
+                   // Log.i("Service","updated value is _______________________ is "+any_updates);
+                }
             }
         }
 
@@ -410,7 +478,7 @@ public class BackgroundService extends Service implements SensorEventListener{
                 .setStyle(new NotificationCompat.InboxStyle()
                         .addLine("Did you fell down?")
                         .addLine("Do you want to send SMS?")
-                        .addLine("SMS will be sent if you don't respond in 20 seconds!")
+                        .addLine("SMS will be sent if you don't respond in "+String.valueOf(timeLimit)+" seconds!")
                 )
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
                 .setCategory(NotificationCompat.CATEGORY_ALARM)
@@ -499,7 +567,7 @@ public class BackgroundService extends Service implements SensorEventListener{
             Log.d("Sensor Activity","User fell down and time of falling is _________________________________________________________:           "+fall_detection_time);
             ///check if 20 seconds have passed since user hasn't responded to the fall dialogue
             //user might be injured
-            if (( (System.currentTimeMillis() / 1000.0) - fall_detection_time) >= 20.0) {
+            if (( (System.currentTimeMillis() / 1000.0) - fall_detection_time) >= timeLimit) {
                 locationAndSMS.getLocationAndSendSMS();
                 disableFallDetection();
                     if(isNotificationEnabled){

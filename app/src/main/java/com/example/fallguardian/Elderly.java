@@ -8,10 +8,14 @@ class Elderly {
     String monitor_first_name;
     String monitor_last_name;
     String monitor_phone_number;
+    String dob;
 
-    Boolean firstLogin;
 
-    public Elderly(String firstName, String lastName, String email, String phone_number, String monitor_first_name, String monitor_last_name, String monitor_phone_number, Boolean firstLogin) {
+    public Elderly(){
+
+    }
+
+    public Elderly(String firstName, String lastName, String email, String phone_number, String monitor_first_name, String monitor_last_name, String monitor_phone_number, String dob) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.email = email;
@@ -19,10 +23,7 @@ class Elderly {
         this.monitor_first_name = monitor_first_name;
         this.monitor_last_name = monitor_last_name;
         this.monitor_phone_number = monitor_phone_number;
-        this.firstLogin = firstLogin;
-    }
-    public Elderly(){
-
+        this.dob = dob;
     }
 
     public String getFirstName() {
@@ -81,11 +82,12 @@ class Elderly {
         this.monitor_phone_number = monitor_phone_number;
     }
 
-    public Boolean getFirstLogin() {
-        return firstLogin;
+    public String getDob() {
+        return dob;
     }
 
-    public void setFirstLogin(Boolean firstLogin) {
-        this.firstLogin = firstLogin;
+    public void setDob(String dob) {
+        this.dob = dob;
     }
+
 }

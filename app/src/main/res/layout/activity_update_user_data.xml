@@ -29,8 +29,8 @@
             android:id="@+id/updateUserFirstName"
             android:inputType="textEmailAddress"
             android:hint="Your First Name"
-            android:textColorHint="#ffffff"
-            android:textColor="#ffffff"
+            android:textColorHint="@android:color/black"
+            android:textColor="@android:color/black"
             android:layout_weight="1"
             android:textSize="15sp"
             />
@@ -42,8 +42,8 @@
             android:id="@+id/updateUserLastName"
             android:inputType="textEmailAddress"
             android:hint="Your Last Name"
-            android:textColorHint="#ffffff"
-            android:textColor="#ffffff"
+            android:textColorHint="@android:color/black"
+            android:textColor="@android:color/black"
             android:layout_weight="1"
             android:textSize="15sp"
             />
@@ -56,8 +56,8 @@
         android:id="@+id/updateUserMobile"
         android:inputType="phone"
         android:hint="Your Mobile Number"
-        android:textColorHint="#ffffff"
-        android:textColor="#ffffff"
+        android:textColorHint="@android:color/black"
+        android:textColor="@android:color/black"
         android:textSize="15sp"
         />
 
@@ -72,8 +72,8 @@
             android:id="@+id/updateMonitorFirstName"
             android:inputType="text"
             android:hint="Monitor's First Name"
-            android:textColorHint="#ffffff"
-            android:textColor="#ffffff"
+            android:textColorHint="@android:color/black"
+            android:textColor="@android:color/black"
             android:layout_weight="1"
             android:textSize="15sp"
             />
@@ -85,8 +85,8 @@
             android:id="@+id/updateMonitorLastName"
             android:inputType="text"
             android:hint="Monitor's Last Name"
-            android:textColorHint="#ffffff"
-            android:textColor="#ffffff"
+            android:textColorHint="@android:color/black"
+            android:textColor="@android:color/black"
             android:layout_weight="1"
             android:textSize="15sp"
             />
@@ -99,8 +99,8 @@
         android:id="@+id/updateMonitorMobile"
         android:inputType="phone"
         android:hint="Monitor's Mobile Number "
-        android:textColorHint="#ffffff"
-        android:textColor="#ffffff"
+        android:textColorHint="@android:color/black"
+        android:textColor="@android:color/black"
         android:textSize="15sp"
         />
 

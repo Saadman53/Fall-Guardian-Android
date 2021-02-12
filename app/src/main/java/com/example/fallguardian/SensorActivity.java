@@ -3,6 +3,8 @@ package com.example.fallguardian;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+
+import android.app.ActivityManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -132,12 +134,6 @@ public class SensorActivity extends AppCompatActivity implements FallDialogue.Fa
                     locationAndSMS.setElderly(current_elderly_user);
 
 
-                    if(!current_elderly_user.getFirstLogin()){
-                        databaseReference.child(user.getUid()).child("firstLogin").setValue(true);
-                        isOnPause = false;
-                        PreferenceManager.getDefaultSharedPreferences(SensorActivity.this).edit().putBoolean("isActive", true).apply();
-                    }
-
 
                     String username = "User: " + current_elderly_user.getFirstName() + " " + current_elderly_user.getLastName();
 
@@ -188,26 +184,28 @@ public class SensorActivity extends AppCompatActivity implements FallDialogue.Fa
         Log.i("Activity","USER IS ______________________________TURNED____________________________________ON CREATE");
 
 
-        if(getIntent().getExtras()!=null){
-            String sendSMS = getIntent().getStringExtra("sendSMS");
+        Bundle extras =  getIntent().getExtras();
+        if(extras!=null){
+            String sendSMS = extras.getString("information");
 
             if(sendSMS!=null){
-                Log.i("RECEIVER", "onReceive ACTIVITY: ______________________________"+sendSMS);
-                if(sendSMS.equals("YES")){
+                if(sendSMS.equals("updated") && isMyServiceRunning(BackgroundService.class)){
                     Intent intent = new Intent(this,BackgroundService.class);
-                    intent.putExtra("Response","yes");
-                    Toast.makeText(this,"Send SMS",Toast.LENGTH_SHORT).show();
-                    startService(intent);
-                }
-                else if(sendSMS.equals("NO")){
-                    Intent intent = new Intent(this,BackgroundService.class);
-                    intent.putExtra("Response","no");
-                    Toast.makeText(this,"Dont Send SMS",Toast.LENGTH_SHORT).show();
+                    intent.putExtra("info","updated");
                     startService(intent);
                 }
             }
         }
+    }
 
+    private boolean isMyServiceRunning(Class<?> serviceClass) {
+        ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
+            if (serviceClass.getName().equals(service.service.getClassName())) {
+                return true;
+            }
+        }
+        return false;
     }
 
 
@@ -219,26 +217,6 @@ public class SensorActivity extends AppCompatActivity implements FallDialogue.Fa
         PreferenceManager.getDefaultSharedPreferences(this).edit().putBoolean("isActive", true).apply();
 
         Log.i("ACTIVITY CYCLE", "________________________________________ON START");
-
-        if(getIntent().getExtras()!=null){
-            String sendSMS = getIntent().getStringExtra("sendSMS");
-
-            if(sendSMS!=null){
-                Log.i("RECEIVER", "onReceive ACTIVITY: ______________________________"+sendSMS);
-                if(sendSMS.equals("YES")){
-                    Intent intent = new Intent(this,BackgroundService.class);
-                    intent.putExtra("Response","yes");
-                    Toast.makeText(this,"Send SMS",Toast.LENGTH_SHORT).show();
-                    startService(intent);
-                }
-                else if(sendSMS.equals("NO")){
-                    Intent intent = new Intent(this,BackgroundService.class);
-                    intent.putExtra("Response","no");
-                    Toast.makeText(this,"Dont Send SMS",Toast.LENGTH_SHORT).show();
-                    startService(intent);
-                }
-            }
-        }
     }
 
     @Override
@@ -260,7 +238,9 @@ public class SensorActivity extends AppCompatActivity implements FallDialogue.Fa
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
        if (item.getItemId() == R.id.signOutMenuId) {
-            stopService();
+           if(isMyServiceRunning(BackgroundService.class)){
+               stopService();
+           }
             FirebaseAuth.getInstance().signOut();
             finish();
 

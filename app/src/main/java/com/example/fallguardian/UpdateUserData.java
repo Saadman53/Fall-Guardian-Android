@@ -86,6 +86,7 @@ public class UpdateUserData extends AppCompatActivity {
         Toast.makeText(this,"User Data Successfully Updated",Toast.LENGTH_SHORT).show();
         finish();
         Intent intent = new Intent(UpdateUserData.this,SensorActivity.class);
+        intent.putExtra("information","updated");
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         startActivity(intent);
 

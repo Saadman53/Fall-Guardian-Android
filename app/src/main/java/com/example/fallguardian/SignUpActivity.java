@@ -3,6 +3,7 @@ package com.example.fallguardian;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.app.DatePickerDialog;
 import android.content.Intent;
 import android.os.Bundle;
 
@@ -10,6 +11,7 @@ import android.os.Bundle;
 import android.util.Patterns;
 import android.view.View;
 import android.widget.Button;
+import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.Toast;
@@ -24,11 +26,17 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.firestore.FirebaseFirestore;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.Locale;
+
 public class SignUpActivity extends AppCompatActivity  {
 
 
     private static final Object TAG = "SignUpActivity";
-    EditText userFirstName,userLastName,userEmail,userPassword,confirmuserPassword,userNumber,monitorFirstName,monitorLastName,monitorNumber;
+    EditText userFirstName,userLastName,userEmail,userPassword,confirmuserPassword,userNumber,monitorFirstName,monitorLastName,monitorNumber, Birthday;
     Button signupButton;
 
     ProgressBar progressBar;
@@ -43,9 +51,12 @@ public class SignUpActivity extends AppCompatActivity  {
     private String user_password;
     private String confirmed_user_password;
     private String user_phone_number;
+    private String date_of_birth;
     private String monitor_first_name;
     private String monitor_last_name;
     private String monitor_phone_number;
+
+    final Calendar myCalendar = Calendar.getInstance();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,6 +72,7 @@ public class SignUpActivity extends AppCompatActivity  {
         userPassword = (EditText) findViewById(R.id.SignupPassword);
         confirmuserPassword = (EditText) findViewById(R.id.SignupConfirmPassword);
         userNumber = (EditText) findViewById(R.id.SignupMobile);
+        Birthday = findViewById(R.id.Birthday);
 
         monitorFirstName = (EditText) findViewById(R.id.SignupMonitorFirstName);
         monitorLastName = (EditText) findViewById(R.id.SignupMonitorLastName) ;
@@ -72,6 +84,34 @@ public class SignUpActivity extends AppCompatActivity  {
 
         databaseReference = FirebaseDatabase.getInstance().getReference("users");
 
+        DatePickerDialog.OnDateSetListener date = new DatePickerDialog.OnDateSetListener() {
+
+            @Override
+            public void onDateSet(DatePicker view, int year, int monthOfYear,
+                                  int dayOfMonth) {
+                // TODO Auto-generated method stub
+                myCalendar.set(Calendar.YEAR, year);
+                myCalendar.set(Calendar.MONTH, monthOfYear);
+                myCalendar.set(Calendar.DAY_OF_MONTH, dayOfMonth);
+                updateLabel();
+            }
+
+        };
+
+
+        Birthday.setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View v) {
+                // TODO Auto-generated method stub
+                new DatePickerDialog(SignUpActivity.this, date, myCalendar
+                        .get(Calendar.YEAR), myCalendar.get(Calendar.MONTH),
+                        myCalendar.get(Calendar.DAY_OF_MONTH)).show();
+            }
+        });
+
+
+
 
 
         signupButton.setOnClickListener(new View.OnClickListener() {
@@ -80,6 +120,13 @@ public class SignUpActivity extends AppCompatActivity  {
                 registerUser();
             }
         });
+    }
+
+    private void updateLabel() {
+        String myFormat = "MM/dd/yyyy"; //In which you need put here
+        SimpleDateFormat sdf = new SimpleDateFormat(myFormat, Locale.US);
+
+        Birthday.setText(sdf.format(myCalendar.getTime()));
     }
 
 
@@ -92,6 +139,7 @@ public class SignUpActivity extends AppCompatActivity  {
         user_password = userPassword.getText().toString().trim();
         confirmed_user_password = confirmuserPassword.getText().toString().trim();
         user_phone_number = userNumber.getText().toString().trim();
+        date_of_birth = Birthday.getText().toString().trim();
         monitor_first_name = monitorFirstName.getText().toString().trim();
         monitor_last_name = monitorLastName.getText().toString().trim();
         monitor_phone_number = monitorNumber.getText().toString().trim();
@@ -122,6 +170,12 @@ public class SignUpActivity extends AppCompatActivity  {
         if(user_phone_number.isEmpty()){
             userNumber.setError("Please Enter a valid Number");
             userNumber.requestFocus();
+            return;
+        }
+
+        if(date_of_birth.isEmpty()){
+            Birthday.setError("Please enter your date of birth");
+            Birthday.requestFocus();
             return;
         }
 
@@ -164,7 +218,7 @@ public class SignUpActivity extends AppCompatActivity  {
                             if (task.isSuccessful()) {
                                 // Sign up is successful, update database
 
-                                 Elderly elderly = new Elderly(user_first_name, user_last_name, user_email, user_phone_number,monitor_first_name,monitor_last_name, monitor_phone_number,false);
+                                 Elderly elderly = new Elderly(user_first_name, user_last_name, user_email, user_phone_number,monitor_first_name,monitor_last_name, monitor_phone_number,date_of_birth);
                                  FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
                                  String userID = user.getUid();
                                  databaseReference.child(userID).setValue(elderly);
@@ -196,6 +250,10 @@ public class SignUpActivity extends AppCompatActivity  {
         }
 
     }
+
+
+
+
 
 
     private void sendVerificationEmail()
