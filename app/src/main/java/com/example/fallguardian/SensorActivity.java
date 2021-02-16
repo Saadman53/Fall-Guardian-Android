@@ -51,7 +51,7 @@ import javax.net.ssl.SSLContext;
 import static com.example.fallguardian.LocationAndSMS.PERMISSIONS;
 
 
-public class SensorActivity extends AppCompatActivity implements FallDialogue.FallDialogueListener {
+public class SensorActivity extends AppCompatActivity {
 
     private static final String TAG = "LogInActivity";
 
@@ -59,20 +59,6 @@ public class SensorActivity extends AppCompatActivity implements FallDialogue.Fa
     ///Database
     DatabaseReference databaseReference;
     FirebaseUser user;
-
-
-    //Datastructures
-    List<Data_ACC> list_ACC;
-    List<Data> list_both;
-
-
-
-
-
-
-    ///current user data
-
-    Elderly current_elderly_user;
 
     ///display informations
     TextView userName, userPhone, monitorName, monitorPhone;
@@ -119,16 +105,16 @@ public class SensorActivity extends AppCompatActivity implements FallDialogue.Fa
             public void onDataChange(@NonNull DataSnapshot snapshot) {
 
                 if(snapshot.exists()){
-                    current_elderly_user = snapshot.child(user.getUid()).getValue(Elderly.class);
-                    locationAndSMS.setElderly(current_elderly_user);
+                    Elderly elderly = snapshot.child(user.getUid()).getValue(Elderly.class);
+                    locationAndSMS.setElderly(elderly);
 
 
 
-                    String username = "User: " + current_elderly_user.getFirstName() + " " + current_elderly_user.getLastName();
+                    String username = "User: " + elderly.getFirstName() + " " + elderly.getLastName();
 
-                    String userphone = "User no: " + current_elderly_user.getPhone_number();
-                    String monitorname = "User's Monitor: " + current_elderly_user.getMonitor_first_name() + " " + current_elderly_user.getMonitor_last_name();
-                    String monitorphone = "Monitor's Phone: " + current_elderly_user.getMonitor_phone_number();
+                    String userphone = "User no: " + elderly.getPhone_number();
+                    String monitorname = "User's Monitor: " + elderly.getMonitor_first_name() + " " + elderly.getMonitor_last_name();
+                    String monitorphone = "Monitor's Phone: " + elderly.getMonitor_phone_number();
 
                     userName.setText(username);
                     userPhone.setText(userphone);
@@ -282,15 +268,6 @@ public class SensorActivity extends AppCompatActivity implements FallDialogue.Fa
         Intent intent = new Intent(this,BackgroundService.class);
         stopService(intent);
     }
-
-    @Override
-    public void applyText(String fall) {
-        Intent intent = new Intent(this,BackgroundService.class);
-        intent.putExtra("Response",fall);
-        startService(intent);
-    }
-
-
 
 
     @Override

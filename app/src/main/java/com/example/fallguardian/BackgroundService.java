@@ -404,18 +404,6 @@ public class BackgroundService extends Service implements SensorEventListener{
         fall_detection_time = 100000000000000.0;
     }
 
-    public boolean isFall_detected() {
-        return fall_detected;
-    }
-
-    public boolean getNotificationEnabled() {
-        return isNotificationEnabled;
-    }
-
-    public void setNotificationEnabled(boolean notificationEnabled) {
-        isNotificationEnabled = notificationEnabled;
-    }
-
 
 
     public void sendNotification(){
@@ -461,10 +449,6 @@ public class BackgroundService extends Service implements SensorEventListener{
         notificationManager.notify(1,notification);
         isNotificationEnabled = true;
 
-    }
-
-    public void cancelNotification(int id){
-        notificationManager.cancel(id);
     }
 
     public void createPost_ACC(List<Data_ACC> list) {
@@ -540,7 +524,7 @@ public class BackgroundService extends Service implements SensorEventListener{
     }
 
 
-    public void countFallTimer(){
+    private void countFallTimer(){
         if (fall_detected) {
             Log.d("Sensor Activity","User fell down and time of falling is _________________________________________________________:           "+fall_detection_time);
             ///check if 20 seconds have passed since user hasn't responded to the fall dialogue
