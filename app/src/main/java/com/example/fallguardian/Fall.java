@@ -1,17 +1,17 @@
 package com.example.fallguardian;
 
 class Fall {
-    private int fall;
+    private double fall;
 
-    public Fall(int fall) {
+    public Fall(double fall) {
         this.fall = fall;
     }
 
-    public int getFall() {
+    public double getFall() {
         return fall;
     }
 
-    public void setFall(int fall) {
+    public void setFall(double fall) {
         this.fall = fall;
     }
 }

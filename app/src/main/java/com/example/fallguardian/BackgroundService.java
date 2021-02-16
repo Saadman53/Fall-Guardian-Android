@@ -58,9 +58,6 @@ import static com.example.fallguardian.NotifApp.CHANNEL_2_ID;
 
 public class BackgroundService extends Service implements SensorEventListener{
 
-
-    Notification notification;
-
     ///Initializing sensors
     private SensorManager sensorManager;
     private Sensor accelerometer;
@@ -70,7 +67,7 @@ public class BackgroundService extends Service implements SensorEventListener{
     private double accelerometer_values[] = {0.0, 0.0, 0.0};
     private double gravity[] = {0.0, 0.0, 0.0};
     private boolean collect_data;
-    double start_time, curr_time;
+    double start_time;
 
     //Datastructures
     List<Data_ACC> list_ACC;
@@ -83,9 +80,6 @@ public class BackgroundService extends Service implements SensorEventListener{
 
     int timeLimit = 25;
 
-    ///display informations
-    TextView userName, userPhone, monitorName, monitorPhone;
-
     private Communicator communicator;
     LocationAndSMS locationAndSMS;
 
@@ -94,12 +88,6 @@ public class BackgroundService extends Service implements SensorEventListener{
     double fall_detection_time;
     private Vibrator v;
 
-
-
-
-
-    ///dialogue box
-    private FallDialogue fallDialogue;
     ///Notificaiton
     public NotificationManagerCompat notificationManager;
     boolean isNotificationEnabled;
@@ -107,9 +95,6 @@ public class BackgroundService extends Service implements SensorEventListener{
     ///Database
     DatabaseReference databaseReference;
     FirebaseUser user;
-
-
-
 
     @Override
     public void onCreate() {
@@ -153,12 +138,7 @@ public class BackgroundService extends Service implements SensorEventListener{
         v = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
         isNotificationEnabled = false;
         notificationManager = NotificationManagerCompat.from(this);
-
-
         getDataFromDataBase();
-
-
-
     }
 
     private int getAge(String dobString){
@@ -237,8 +217,6 @@ public class BackgroundService extends Service implements SensorEventListener{
             }
         });
     }
-
-
 
     private int binary_ACC(double time, List<Data_ACC> list, int length) {
         int l = -1;
@@ -356,10 +334,6 @@ public class BackgroundService extends Service implements SensorEventListener{
 
     }
 
-
-
-
-
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
 
@@ -381,15 +355,14 @@ public class BackgroundService extends Service implements SensorEventListener{
                 else if(value.equals("YESNO")){
                     disableFallDetection();
                     isNotificationEnabled = false;
-                    Toast.makeText(this,"Incase of injury click 'Emergency Distress Call' from the options menu.",Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this,"Incase of injury click 'Emergency Distress SMS' button.",Toast.LENGTH_SHORT).show();
                 }
 
             }
             if(any_updates!=null){
                 if(any_updates.equals("updated")){
                     getDataFromDataBase();
-                    //Toast.makeText(this,"Data updated in Service",Toast.LENGTH_SHORT).show();
-                   // Log.i("Service","updated value is _______________________ is "+any_updates);
+
                 }
             }
         }
@@ -398,7 +371,7 @@ public class BackgroundService extends Service implements SensorEventListener{
         activityIntent.putExtra("flag","not_fall");
         PendingIntent contentIntent = PendingIntent.getActivity(this,0,activityIntent,0);
 
-        notification = new NotificationCompat.Builder(this,CHANNEL_2_ID)
+        Notification notification = new NotificationCompat.Builder(this,CHANNEL_2_ID)
                 .setContentTitle("Fall Gudarian")
                 .setContentText("Running on Background.")
                 .setSmallIcon(R.drawable.ic_service)
@@ -420,10 +393,6 @@ public class BackgroundService extends Service implements SensorEventListener{
     public IBinder onBind(Intent intent) {
         return null;
     }
-
-
-
-
 
     public void enableFallDetection(){
         fall_detected = true;
@@ -506,7 +475,8 @@ public class BackgroundService extends Service implements SensorEventListener{
             public void onResponse(Call<Fall> call, Response<Fall> response) {
                 Fall hasFall = response.body();
                 try {
-                    if (hasFall.getFall() == 1) {
+                    Log.i("SERVICE", "onResponse: ++++++++++++++++++++++++++++ "+hasFall.getFall());
+                    if (hasFall.getFall()==1.0) {
 
                         if (prev_response == 0) {
                             Toast.makeText(BackgroundService.this, "Fall Detected!", Toast.LENGTH_LONG).show();
@@ -516,9 +486,13 @@ public class BackgroundService extends Service implements SensorEventListener{
                             v.vibrate(1000);
 
                         }
+                        prev_response = 1;
 
                     }
-                    prev_response = hasFall.getFall();
+                    else{
+                        prev_response = 0;
+                    }
+
                 } catch (NullPointerException e) {
                     Log.d("SensorActivity", "CAUGHT++++++++++++++++++++EXCEPTION++++++++++============" + e);
 
@@ -540,18 +514,22 @@ public class BackgroundService extends Service implements SensorEventListener{
             @Override
             public void onResponse(Call<Fall> call, Response<Fall> response) {
                 Fall hasFall = response.body();
-                if (hasFall.getFall() == 1) {
+                if (hasFall.getFall()==1.0) {
+
                     if (prev_response == 0) {
                         Toast.makeText(BackgroundService.this, "Fall Detected!", Toast.LENGTH_LONG).show();
-
-                              enableFallDetection();
-                              sendNotification();
+                        enableFallDetection();
+                        sendNotification();
 
                         v.vibrate(1000);
 
                     }
+                    prev_response = 1;
+
                 }
-                prev_response = hasFall.getFall();
+                else{
+                    prev_response = 0;
+                }
             }
 
             @Override

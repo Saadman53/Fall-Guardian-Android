@@ -77,11 +77,6 @@ public class SensorActivity extends AppCompatActivity implements FallDialogue.Fa
     ///display informations
     TextView userName, userPhone, monitorName, monitorPhone;
 
-
-    ///invoke when user is on pause
-    private boolean isOnPause;
-
-
     Button emergencyButton;
 
 
@@ -106,10 +101,6 @@ public class SensorActivity extends AppCompatActivity implements FallDialogue.Fa
         }
 
 
-        isOnPause = false;
-
-
-        isOnPause = false;
 
         user = FirebaseAuth.getInstance().getCurrentUser();
 
@@ -122,8 +113,6 @@ public class SensorActivity extends AppCompatActivity implements FallDialogue.Fa
         userPhone = findViewById(R.id.userPhoneId);
         monitorName = findViewById(R.id.monitorNameId);
         monitorPhone = findViewById(R.id.monitorPhoneId);
-
-        isOnPause = false;
 
         databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
@@ -198,18 +187,6 @@ public class SensorActivity extends AppCompatActivity implements FallDialogue.Fa
         }
     }
 
-    private boolean isMyServiceRunning(Class<?> serviceClass) {
-        ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
-        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
-            if (serviceClass.getName().equals(service.service.getClassName())) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-
-
 
     @Override
     protected void onStart() {
@@ -249,7 +226,12 @@ public class SensorActivity extends AppCompatActivity implements FallDialogue.Fa
             startActivity(intent);
         }
         else if(item.getItemId() == R.id.startSystemId){
-            startService();
+           if(isMyServiceRunning(BackgroundService.class)){
+               Toast.makeText(this,"System is already running",Toast.LENGTH_SHORT).show();
+           }
+           else{
+               startService();
+           }
         }
         else if(item.getItemId() == R.id.stopSystemId){
             stopService();
@@ -267,9 +249,6 @@ public class SensorActivity extends AppCompatActivity implements FallDialogue.Fa
     protected void onPause() {
 
         super.onPause();
-
-        isOnPause = true;
-
         PreferenceManager.getDefaultSharedPreferences(this).edit().putBoolean("isActive", false).apply();
 
 
@@ -329,6 +308,14 @@ public class SensorActivity extends AppCompatActivity implements FallDialogue.Fa
 
     }
 
-
+    private boolean isMyServiceRunning(Class<?> serviceClass) {
+        ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
+            if (serviceClass.getName().equals(service.service.getClassName())) {
+                return true;
+            }
+        }
+        return false;
+    }
 
 }
