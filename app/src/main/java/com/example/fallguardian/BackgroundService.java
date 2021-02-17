@@ -498,21 +498,28 @@ public class BackgroundService extends Service implements SensorEventListener{
             @Override
             public void onResponse(Call<Fall> call, Response<Fall> response) {
                 Fall hasFall = response.body();
-                if (hasFall.getFall()==1.0) {
+                try {
+                    Log.i("SERVICE", "onResponse: ++++++++++++++++++++++++++++ "+hasFall.getFall());
+                    if (hasFall.getFall()==1.0) {
 
-                    if (prev_response == 0) {
-                        Toast.makeText(BackgroundService.this, "Fall Detected!", Toast.LENGTH_LONG).show();
-                        enableFallDetection();
-                        sendNotification();
+                        if (prev_response == 0) {
+                            Toast.makeText(BackgroundService.this, "Fall Detected!", Toast.LENGTH_LONG).show();
+                            enableFallDetection();
+                            sendNotification();
 
-                        v.vibrate(1000);
+                            v.vibrate(1000);
+
+                        }
+                        prev_response = 1;
 
                     }
-                    prev_response = 1;
+                    else{
+                        prev_response = 0;
+                    }
 
-                }
-                else{
-                    prev_response = 0;
+                } catch (NullPointerException e) {
+                    Log.i("SensorActivity", "CAUGHT++++++++++++++++++++EXCEPTION++++++++++============" + e);
+
                 }
             }
 
