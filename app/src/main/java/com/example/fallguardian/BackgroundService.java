@@ -478,7 +478,7 @@ public class BackgroundService extends Service implements SensorEventListener{
                     }
 
                 } catch (NullPointerException e) {
-                    Log.d("SensorActivity", "CAUGHT++++++++++++++++++++EXCEPTION++++++++++============" + e);
+                    Log.i("SensorActivity", "CAUGHT++++++++++++++++++++EXCEPTION++++++++++============" + e);
 
                 }
 
@@ -486,7 +486,7 @@ public class BackgroundService extends Service implements SensorEventListener{
 
             @Override
             public void onFailure(Call<Fall> call, Throwable t) {
-                Log.d("SensorActivity", "_____________________________________________FAILURE_____________" + String.valueOf(t));
+                Log.i("SensorActivity", "_____________________________________________FAILURE_____________" + String.valueOf(t));
             }
         });
     }
