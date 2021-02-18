@@ -1,14 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="20dp"
-    android:background="#FBFEFF"
-    android:orientation="vertical"
+
     tools:context=".LogInActivity"
     >
+<LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="20dp"
+    android:background="#FBFEFF"
+    android:orientation="vertical">
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:layout_marginBottom="100dp"
+        android:layout_marginTop="50dp">
+    <ImageView
+        android:layout_width="150dp"
+        android:layout_height="150dp"
+        android:gravity="center"
+        android:src="@drawable/icon" />
+    </LinearLayout>
 
     <EditText
         android:layout_marginTop="20dp"
@@ -56,6 +72,7 @@
         android:gravity="center"
         android:text="Forgot Password"
         android:textColor="@android:color/holo_blue_dark" />
+
     <ProgressBar
         android:visibility="gone"
         android:layout_width="wrap_content"
@@ -63,4 +80,5 @@
         android:id="@+id/progressBarId"
         />
 
-</LinearLayout>
+    </LinearLayout>
+</ScrollView>
