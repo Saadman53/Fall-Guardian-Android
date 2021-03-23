@@ -17,7 +17,7 @@ import com.google.firebase.database.FirebaseDatabase;
 
 public class UpdateUserData extends AppCompatActivity {
 
-    EditText userFirstName,userLastName,userPhoneNumber,monitorFirstName,monitorLastName,monitorPhoneNumber;
+    EditText userFirstName,userLastName,monitorPhoneNumber;
     Button updateButton;
     ProgressBar progressBar;
 
@@ -30,9 +30,7 @@ public class UpdateUserData extends AppCompatActivity {
 
         userFirstName = findViewById(R.id.updateUserFirstName);
         userLastName = findViewById(R.id.updateUserLastName);
-        userPhoneNumber = findViewById(R.id.updateUserMobile);
-        monitorFirstName = findViewById(R.id.updateMonitorFirstName);
-        monitorLastName = findViewById(R.id.updateMonitorLastName);
+
         monitorPhoneNumber = findViewById(R.id.updateMonitorMobile);
         updateButton = findViewById(R.id.updateButton);
         progressBar = findViewById(R.id.updateProgressBar);
@@ -54,9 +52,7 @@ public class UpdateUserData extends AppCompatActivity {
 
         String u1 = userFirstName.getText().toString().trim();
         String u2 = userLastName.getText().toString().trim();
-        String uPhone  = userPhoneNumber.getText().toString().trim();
-        String m1 = monitorFirstName.getText().toString().trim();
-        String m2 = monitorLastName.getText().toString().trim();
+
         String mPhone = monitorPhoneNumber.getText().toString().trim();
 
         String userID = user.getUid();
@@ -66,16 +62,7 @@ public class UpdateUserData extends AppCompatActivity {
         if(!u2.equals("")){
             databaseReference.child(userID).child("lastName").setValue(u2);
         }
-        if(!m1.equals("")){
-            databaseReference.child(userID).child("monitor_first_name").setValue(m1);
-        }
-        if(!m2.equals("")){
-            databaseReference.child(userID).child("monitor_last_name").setValue(m2);
-        }
 
-        if(!uPhone.equals("")){
-            databaseReference.child(userID).child("phone_number").setValue(uPhone);
-        }
 
         if(!mPhone.equals("")){
             databaseReference.child(userID).child("monitor_phone_number").setValue(mPhone);

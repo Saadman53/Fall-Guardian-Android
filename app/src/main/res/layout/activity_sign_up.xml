@@ -81,16 +81,7 @@
                 android:layout_weight="1"
                 />
         </LinearLayout>
-        <EditText
-            android:layout_marginTop="20dp"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:id="@+id/SignupMobile"
-            android:inputType="phone"
-            android:hint="Your Mobile Number"
-            android:textColorHint="@color/grey"
-            android:textColor="@android:color/black"
-            />
+
         <EditText
             android:layout_marginTop="20dp"
             android:layout_width="match_parent"
@@ -102,34 +93,7 @@
             android:textColor="@android:color/black"
             android:focusable="false"/>
 
-        <LinearLayout android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            >
-            <EditText
-                android:layout_marginTop="20dp"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:id="@+id/SignupMonitorFirstName"
-                android:inputType="text"
-                android:hint="Monitor's First Name"
-                android:textColorHint="@color/grey"
-                android:textColor="@android:color/black"
-                android:layout_weight="1"
-                />
 
-            <EditText
-                android:layout_marginTop="20dp"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:id="@+id/SignupMonitorLastName"
-                android:inputType="text"
-                android:hint="Monitor's Last Name"
-                android:textColorHint="@color/grey"
-                android:textColor="@android:color/black"
-                android:layout_weight="1"
-                />
-        </LinearLayout>
 
         <EditText
             android:layout_marginTop="20dp"

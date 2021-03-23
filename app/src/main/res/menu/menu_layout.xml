@@ -13,6 +13,10 @@
         android:title="Update User Data"
         android:id="@+id/updateId"
         />
+    <item
+        android:title="Terms &amp; Conditions"
+        android:id="@+id/termsId"
+        />
 <item
     android:title="Sign Out"
     android:id="@+id/signOutMenuId"

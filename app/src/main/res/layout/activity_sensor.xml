@@ -18,22 +18,7 @@
         android:id="@+id/userNameId"
         android:textSize="20sp"
         />
-    <TextView
-        android:layout_marginTop="20dp"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:textColor="@android:color/black"
-        android:id="@+id/userPhoneId"
-        android:textSize="20sp"
-        />
-    <TextView
-        android:layout_marginTop="20dp"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:textColor="@android:color/black"
-        android:id="@+id/monitorNameId"
-        android:textSize="20sp"
-        />
+
     <TextView
         android:layout_marginTop="20dp"
         android:layout_width="match_parent"
@@ -48,7 +33,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/emergencyID"
-        android:text="EMERGENCY DISTRESS SMS"
+        android:text="@string/emergency"
         android:layout_gravity="center_horizontal"
         android:background="@android:color/holo_red_light"
         />

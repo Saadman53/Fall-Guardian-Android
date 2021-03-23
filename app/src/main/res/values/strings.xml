@@ -4,4 +4,57 @@
     <string name="log_in">LOG IN</string>
     <string name="not_registered">Are you not registered? Sign Up</string>
     <string name="register">Register</string>
+    <string name="emergency">EMERGENCY DISTRESS SMS</string>
+    <string name="agree"><span style="color: #5B9BD5">I agree</span></string>
+
+    <string name="about_text_html">
+         <![CDATA[
+
+        <p>Fall guardian is an application that can detect user <i>falls</i> and sense if the user has been injured. A distress message containing the location of the user is send to the <i>monitor’s phone number</i> via the user’s mobile device if the user is injured from fall given that SMS and location permission is given. The monitor is assigned by the user during registration.</p>
+
+        ]]>
+    </string>
+
+    <string name= "agreement_text_html">
+
+        <![CDATA[
+
+        <h1><u><span style="color:#5B9BD5">About FallGuardian</span></u></h1>
+        <br /> <br />
+
+        <p>Fall guardian is an application that can detect user <i>falls</i> and sense if the user has been injured. A distress message containing the location of the user is send to the <i>monitor’s phone number</i> via the user’s mobile device if the user is injured from fall given that SMS and location permission is given. The monitor is assigned by the user during registration.</p>
+        <br /> <br /> <br />
+
+
+        <h1><u><span style="color:#5B9BD5">How to use FallGuardian</span></u></h1>
+        <br /> <br />
+        <p>After logging in a popup will ask the user to allow permissions for using the <b><i>location &amp; SMS service</i></b>. Then from the options menu, the user has to select <b><i>Start System</i></b> option to start the process. This process will not work without internet connection. The user must keep the app running on background for the process to continue working. The system might shut down if the app is closed. To turn off the system the user should select the <b><i>Stop System</i></b> option of the options menu.</p>
+        <br /> <br /> <br />
+
+
+        <h1><u><span style="color:#5B9BD5">Requirements</span></u></h1>
+
+        <br /> <br></br>
+        <p>
+        1.	Allow permissions for Location &amp; SMS services. Also manually turn on the location access from settings.
+        <br></br> <br></br>
+        2.	Turn on internet access.
+        <br></br> <br></br>
+        3.	Keep the system running on background.
+        </p>
+        <br></br> <br></br> <br></br>
+
+        <h1><u><span style="color:#5B9BD5">Privacy &amp; Security</span></u></h1>
+
+        <br></br> <br></br>
+        <p>
+            The data from your mobile <i>accelerometer &amp; gyroscope</i> sensors are send to the server for detecting falls. The data is not saved or kept anywhere on the server. User’s location data is only accessed when the distress SMS is sent to the monitor. No third party can view or access the user’s information. The user’s <i>Name, Age &amp; Monitor’s phone number</i> is saved in our database for the system to use them during distress SMS.
+        </p>
+        <br></br> <br></br>
+        <b><i>User’s privacy &amp; security is safe with us.</i></b>
+
+        ]]>
+
+    </string>
+    <string name="read">Please read the following terms to continue.</string>
 </resources>

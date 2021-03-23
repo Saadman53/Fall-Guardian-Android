@@ -61,7 +61,7 @@ public class SensorActivity extends AppCompatActivity {
     FirebaseUser user;
 
     ///display informations
-    TextView userName, userPhone, monitorName, monitorPhone;
+    TextView userName, monitorPhone;
 
     Button emergencyButton;
 
@@ -96,8 +96,7 @@ public class SensorActivity extends AppCompatActivity {
 
 
         userName = findViewById(R.id.userNameId);
-        userPhone = findViewById(R.id.userPhoneId);
-        monitorName = findViewById(R.id.monitorNameId);
+
         monitorPhone = findViewById(R.id.monitorPhoneId);
 
         databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
@@ -112,13 +111,11 @@ public class SensorActivity extends AppCompatActivity {
 
                     String username = "User: " + elderly.getFirstName() + " " + elderly.getLastName();
 
-                    String userphone = "User no: " + elderly.getPhone_number();
-                    String monitorname = "User's Monitor: " + elderly.getMonitor_first_name() + " " + elderly.getMonitor_last_name();
+
                     String monitorphone = "Monitor's Phone: " + elderly.getMonitor_phone_number();
 
                     userName.setText(username);
-                    userPhone.setText(userphone);
-                    monitorName.setText(monitorname);
+
                     monitorPhone.setText(monitorphone);
                     Toast.makeText(SensorActivity.this,"Retrieved user data",Toast.LENGTH_SHORT).show();
                 }
@@ -227,6 +224,12 @@ public class SensorActivity extends AppCompatActivity {
             Intent intent = new Intent(this,UpdateUserData.class);
             intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
             startActivity(intent);
+        }
+        else  if(item.getItemId()==R.id.termsId){
+           finish();
+           Intent intent = new Intent(this,Agreement.class);
+           intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+           startActivity(intent);
         }
         return super.onOptionsItemSelected(item);
     }

@@ -69,7 +69,7 @@ class LocationAndSMS {
     public void sendSMSMessage() {
         try {
             phoneNo = elderly.getMonitor_phone_number();
-            message = "Dear "+elderly.getMonitor_first_name()+" "+elderly.getMonitor_last_name()+",\n"+elderly.getFirstName()+" "+elderly.getLastName()+" fell down and might be injured"+" at location: "+user_map_location+" .";
+            message = elderly.getFirstName()+" "+elderly.getLastName()+" fell down and might be injured"+" at location: "+user_map_location+" .";
             if (ContextCompat.checkSelfPermission(context,
                     Manifest.permission.SEND_SMS)
                     != PackageManager.PERMISSION_GRANTED) {

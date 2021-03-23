@@ -9,6 +9,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 
+import android.text.Html;
 import android.util.Log;
 import android.util.Patterns;
 import android.view.View;
@@ -25,13 +26,17 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 
 public class LogInActivity extends AppCompatActivity  {
 
     EditText loginEmail,loginPassword;
-    TextView signupTextView, forgotPasswordTextView;
+    TextView signupTextView, forgotPasswordTextView, aboutTextView;
     Button loginButton;
 
     ProgressBar progressBar;
@@ -41,6 +46,7 @@ public class LogInActivity extends AppCompatActivity  {
     String email ;
     String password ;
 
+    DatabaseReference databaseReference;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,8 +65,11 @@ public class LogInActivity extends AppCompatActivity  {
         loginButton = (Button) findViewById(R.id.LoginButton);
         signupTextView = (TextView) findViewById(R.id.signupTextView);
         forgotPasswordTextView = (TextView) findViewById(R.id.forgotPassTextView);
+        aboutTextView = (TextView) findViewById(R.id.aboutID);
 
         progressBar = (ProgressBar) findViewById(R.id.progressBarId);
+
+
 
         signupTextView.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -71,6 +80,24 @@ public class LogInActivity extends AppCompatActivity  {
             }
         });
 
+        databaseReference = FirebaseDatabase.getInstance().getReference("users");
+
+
+        aboutTextView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                AlertDialog.Builder aboutDialog = new AlertDialog.Builder(v.getContext());
+                aboutDialog.setTitle("About Fall Guardian");
+                aboutDialog.setMessage(Html.fromHtml(getString(R.string.about_text_html)));
+                aboutDialog.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+
+                    }
+                });
+                aboutDialog.create().show();
+            }
+        });
         forgotPasswordTextView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -84,17 +111,24 @@ public class LogInActivity extends AppCompatActivity  {
                     public void onClick(DialogInterface dialog, int which) {
                         ///extract the email and sent reset link
                         String mail = resetMail.getText().toString();
-                        FirebaseAuth.getInstance().sendPasswordResetEmail(mail).addOnSuccessListener(new OnSuccessListener<Void>() {
-                            @Override
-                            public void onSuccess(Void aVoid) {
-                                Toast.makeText(LogInActivity.this,"Reset Link Sent To Your Email",Toast.LENGTH_SHORT).show();
-                            }
-                        }).addOnFailureListener(new OnFailureListener() {
-                            @Override
-                            public void onFailure(@NonNull Exception e) {
-                                Toast.makeText(LogInActivity.this,"Error! Reset Link is Not Send "+e.getMessage(),Toast.LENGTH_SHORT).show();
-                            }
-                        });
+                        if(Patterns.EMAIL_ADDRESS.matcher(mail).matches()){
+                            FirebaseAuth.getInstance().sendPasswordResetEmail(mail).addOnSuccessListener(new OnSuccessListener<Void>() {
+                                @Override
+                                public void onSuccess(Void aVoid) {
+                                    Toast.makeText(LogInActivity.this,"Reset Link Sent To Your Email",Toast.LENGTH_SHORT).show();
+                                }
+                            }).addOnFailureListener(new OnFailureListener() {
+                                @Override
+                                public void onFailure(@NonNull Exception e) {
+                                    Toast.makeText(LogInActivity.this,"Error! Reset Link is Not Send "+e.getMessage(),Toast.LENGTH_SHORT).show();
+                                }
+                            });
+                        }
+                        else{
+                            resetMail.setError("Enter a valid email Address");
+                            resetMail.requestFocus();
+                        }
+
                     }
                 });
                 passwordResetDialog.setNegativeButton("No", new DialogInterface.OnClickListener() {
@@ -123,7 +157,7 @@ public class LogInActivity extends AppCompatActivity  {
     private void doesUserExists(){
         if(user!=null){
             if(user.isEmailVerified()){
-                loginSuccessful("no");
+                loginSuccessful("exists");
             }
             else{
                 ///user exists but email is not verified
@@ -168,7 +202,9 @@ public class LogInActivity extends AppCompatActivity  {
 
                        FirebaseUser loggedinUser = FirebaseAuth.getInstance().getCurrentUser();
                        if(loggedinUser.isEmailVerified()){
-                           loginSuccessful("yes");
+                           user = loggedinUser;
+
+                           loginSuccessful("no");
                            return;
                        }
                        else{
@@ -185,13 +221,57 @@ public class LogInActivity extends AppCompatActivity  {
         }
     }
     private void loginSuccessful(String text){
-        finish();
+
+        if(text.equals("no")){
+            databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot snapshot) {
+
+                    if(snapshot.exists()){
+                        Elderly elderly = snapshot.child(user.getUid()).getValue(Elderly.class);
+                        if(elderly.getFirstLogin()){
+                            databaseReference.child(user.getUid()).child("firstLogin").setValue(false);
+                            first_time("yes");
+                        }
+                        else{
+                            first_time("no");
+                        }
+                    }
+                    else{
+
+                    }
 
 
-        Intent intent = new Intent(LogInActivity.this,SensorActivity.class);
-        //intent.putExtra("flag",text);
-        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        startActivity(intent);
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError error) {
+
+                }
+            });
+        }
+
+        else{
+            first_time("no");
+        }
+    }
+
+    void first_time(String x){
+        if(x.equals("no")){
+            finish();
+
+            Intent intent = new Intent(LogInActivity.this,SensorActivity.class);
+            //intent.putExtra("flag",text);
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            startActivity(intent);
+        }
+        else{
+            finish();
+
+            Intent intent = new Intent(LogInActivity.this,Agreement.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            startActivity(intent);
+        }
     }
 }
 

@@ -15,6 +15,18 @@ public class Data {
     private double grav_z;
     private Long timestamp;
 
+//    private double max_acc;
+//    private double min_acc;
+//    private double max_grav;
+//    private double min_grav;
+//    private double max_lin;
+//    private double min_lin ;
+//    private double max_agv ;
+//    private double min_agv ;
+//    private double max_gyro ;
+//    private double min_gyro ;
+
+
     public Data(double acc_x, double acc_y, double acc_z, double gyro_x, double gyro_y, double gyro_z, double grav_x, double grav_y, double grav_z, Long timestamp) {
         this.acc_x = acc_x;
         this.acc_y = acc_y;

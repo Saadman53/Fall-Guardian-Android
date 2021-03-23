@@ -9,7 +9,7 @@
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
 
     <application
         android:name=".NotifApp"
@@ -20,7 +20,8 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.FallGuardian"
         android:usesCleartextTraffic="true">
-        <activity android:name=".UpdateUserData"></activity>
+        <activity android:name=".Agreement"></activity>
+        <activity android:name=".UpdateUserData" />
         <activity android:name=".SignUpActivity" />
         <activity android:name=".LogInActivity">
             <intent-filter>
@@ -31,13 +32,13 @@
         </activity>
         <activity
             android:name=".SensorActivity"
-            android:launchMode="singleTask"></activity>
-        <service android:name=".BackgroundService"/>
+            android:launchMode="singleTask" />
 
-        <receiver android:name=".NotificationReceiverYES"/>
-        <receiver android:name=".NotificationReceiverNO"/>
-        <receiver android:name=".NotificationReceiverYESNO"/>
+        <service android:name=".BackgroundService" />
 
+        <receiver android:name=".NotificationReceiverYES" />
+        <receiver android:name=".NotificationReceiverNO" />
+        <receiver android:name=".NotificationReceiverYESNO" />
     </application>
 
 </manifest>

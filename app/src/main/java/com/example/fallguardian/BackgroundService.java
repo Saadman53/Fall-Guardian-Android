@@ -66,7 +66,7 @@ public class BackgroundService extends Service implements SensorEventListener{
     ///initializing gravity vector
     private double accelerometer_values[] = {0.0, 0.0, 0.0};
     private double gravity[] = {0.0, 0.0, 0.0};
-    private boolean collect_data;
+    private boolean collect_data = false;
     double start_time;
 
     //Datastructures
@@ -76,6 +76,7 @@ public class BackgroundService extends Service implements SensorEventListener{
     ///current user data
 
     Elderly current_elderly_user;
+
     int age;
 
     int timeLimit = 25;
@@ -95,6 +96,10 @@ public class BackgroundService extends Service implements SensorEventListener{
     ///Database
     DatabaseReference databaseReference;
     FirebaseUser user;
+
+
+
+
 
     @Override
     public void onCreate() {
@@ -118,12 +123,12 @@ public class BackgroundService extends Service implements SensorEventListener{
 
         ///registering Accelerometer
         accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
-        sensorManager.registerListener(BackgroundService.this, accelerometer, SensorManager.SENSOR_DELAY_GAME);  //SensorManager.SENSOR_DELAY_NORMAL
+        sensorManager.registerListener(BackgroundService.this, accelerometer, 10000);  //SensorManager.SENSOR_DELAY_NORMAL 10000
         gyroscope = sensorManager.getDefaultSensor(Sensor.TYPE_GYROSCOPE);
         if (gyroscope != null) {
-            sensorManager.registerListener(BackgroundService.this, gyroscope, SensorManager.SENSOR_DELAY_GAME);  //SensorManager.SENSOR_DELAY_NORMAL
+            sensorManager.registerListener(BackgroundService.this, gyroscope,  10000);  //SensorManager.SENSOR_DELAY_NORMAL
         }
-        collect_data = true;
+        collect_data = false;
         list_ACC = new ArrayList<Data_ACC>();
         list_both = new ArrayList<Data>();
 
@@ -191,11 +196,14 @@ public class BackgroundService extends Service implements SensorEventListener{
 
         databaseReference = FirebaseDatabase.getInstance().getReference("users");
 
+
         databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
+
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
 
                 if(snapshot.exists()){
+                    enableDataCollection();
                     current_elderly_user = snapshot.child(user.getUid()).getValue(Elderly.class);
                     age = getAge(current_elderly_user.getDob());
                     setTimeLimit();
@@ -216,6 +224,9 @@ public class BackgroundService extends Service implements SensorEventListener{
 
             }
         });
+    }
+    void enableDataCollection(){
+        collect_data = true;
     }
 
     private int binary_ACC(double time, List<Data_ACC> list, int length) {
@@ -296,7 +307,7 @@ public class BackgroundService extends Service implements SensorEventListener{
 
 
 
-        if ((System.currentTimeMillis() / 1000.0) - start_time > 6.0) {
+        if ((System.currentTimeMillis() / 1000.0) - start_time >= 6.0) {
             int index = binary_ACC(start_time, list_ACC, list_ACC.size());
             List<Data_ACC> temp;
             temp = list_ACC;
@@ -319,10 +330,10 @@ public class BackgroundService extends Service implements SensorEventListener{
         list_both.add(data);
 
 
-        if ((System.currentTimeMillis() / 1000.0) - start_time > 6.0) {
+        if ((System.currentTimeMillis() / 1000.0) - start_time >= 6.0) {
             int index = binary_both(start_time, list_both, list_both.size());
 
-
+            Log.i("HAHAHHAHAH","DATA IS BEING LOADED++++++++++++++++++++");
             List<Data> temp;
             temp = list_both;
             list_both = list_both.subList(index + 1, list_both.size());
@@ -385,6 +396,7 @@ public class BackgroundService extends Service implements SensorEventListener{
     @Override
     public void onDestroy() {
         super.onDestroy();
+        collect_data = false;
         sensorManager.unregisterListener(this);
     }
 
@@ -460,7 +472,8 @@ public class BackgroundService extends Service implements SensorEventListener{
                 Fall hasFall = response.body();
                 try {
                     Log.i("SERVICE", "onResponse: ++++++++++++++++++++++++++++ "+hasFall.getFall());
-                    if (hasFall.getFall()==1.0) {
+                    //fall = hasFall;
+                    if (hasFall.getFall()==1) {
 
                         if (prev_response == 0) {
                             Toast.makeText(BackgroundService.this, "Fall Detected!", Toast.LENGTH_LONG).show();
@@ -483,6 +496,7 @@ public class BackgroundService extends Service implements SensorEventListener{
                 }
 
             }
+
 
             @Override
             public void onFailure(Call<Fall> call, Throwable t) {
@@ -491,7 +505,7 @@ public class BackgroundService extends Service implements SensorEventListener{
         });
     }
 
-    public void createPost_both(List<Data> list) {
+    public void createPost_both(List<Data> list){
 
         Call<Fall> call = communicator.getClient_both().GetPostValue_both(list);
         call.enqueue(new Callback<Fall>() {
@@ -500,7 +514,8 @@ public class BackgroundService extends Service implements SensorEventListener{
                 Fall hasFall = response.body();
                 try {
                     Log.i("SERVICE", "onResponse: ++++++++++++++++++++++++++++ "+hasFall.getFall());
-                    if (hasFall.getFall()==1.0) {
+                    //fall = hasFall;
+                    if (hasFall.getFall()==1) {
 
                         if (prev_response == 0) {
                             Toast.makeText(BackgroundService.this, "Fall Detected!", Toast.LENGTH_LONG).show();
@@ -521,15 +536,16 @@ public class BackgroundService extends Service implements SensorEventListener{
                     Log.i("SensorActivity", "CAUGHT++++++++++++++++++++EXCEPTION++++++++++============" + e);
 
                 }
+
             }
+
 
             @Override
             public void onFailure(Call<Fall> call, Throwable t) {
-                Log.d("SensorActivity", "___________________________________ERROR FOR GYRO+_________________" + String.valueOf(t));
+                Log.i("SensorActivity", "_____________________________________________FAILURE_____________" + String.valueOf(t));
             }
         });
     }
-
 
     private void countFallTimer(){
         if (fall_detected) {
