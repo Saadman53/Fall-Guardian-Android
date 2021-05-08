@@ -226,9 +226,8 @@ public class SensorActivity extends AppCompatActivity {
             startActivity(intent);
         }
         else  if(item.getItemId()==R.id.termsId){
-           finish();
-           Intent intent = new Intent(this,Agreement.class);
-           intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+           Intent intent = new Intent(this,About.class);
+           //intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
            startActivity(intent);
         }
         return super.onOptionsItemSelected(item);

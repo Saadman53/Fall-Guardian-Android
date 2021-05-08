@@ -157,12 +157,16 @@ public class LogInActivity extends AppCompatActivity  {
     private void doesUserExists(){
         if(user!=null){
             if(user.isEmailVerified()){
+                Log.d("LOGIN","USER SEEMS TO EXIST IN THIS SYSTEM WEIRD");
                 loginSuccessful("exists");
             }
             else{
                 ///user exists but email is not verified
                 Log.d("LogInActivity","User exists but email is not verified");
             }
+        }
+        else{
+            Log.d("LOGIN","USER SEEMS TO BE NULL IN THIS SYSTEM WHICH IS NOT WEIRD XD");
         }
     }
 

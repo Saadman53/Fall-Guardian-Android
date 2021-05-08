@@ -108,7 +108,7 @@ class LocationAndSMS {
         }
         catch(NullPointerException e){
             Toast.makeText(context,
-                    "SMS faild, please try again.", Toast.LENGTH_LONG).show();
+                    "SMS failed, please try again.", Toast.LENGTH_LONG).show();
             System.out.println("Exception Caught");
         }
 

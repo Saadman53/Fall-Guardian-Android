@@ -20,7 +20,8 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.FallGuardian"
         android:usesCleartextTraffic="true">
-        <activity android:name=".Agreement"></activity>
+        <activity android:name=".About"></activity>
+        <activity android:name=".Agreement" />
         <activity android:name=".UpdateUserData" />
         <activity android:name=".SignUpActivity" />
         <activity android:name=".LogInActivity">
