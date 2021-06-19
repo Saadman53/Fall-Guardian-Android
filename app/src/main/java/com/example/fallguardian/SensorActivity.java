@@ -145,7 +145,7 @@ public class SensorActivity extends AppCompatActivity {
         emergencyButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                locationAndSMS.getLocationAndSendSMS();
+                locationAndSMS.getLocationAndSendSMS(true);
             }
         });
 

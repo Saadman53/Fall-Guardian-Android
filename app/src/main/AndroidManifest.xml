@@ -40,6 +40,7 @@
         <receiver android:name=".NotificationReceiverYES" />
         <receiver android:name=".NotificationReceiverNO" />
         <receiver android:name=".NotificationReceiverYESNO" />
+        <receiver android:name=".NotificationReceiverEmergency" />
     </application>
 
 </manifest>

@@ -6,6 +6,7 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -298,10 +299,11 @@ public class BackgroundService extends Service implements SensorEventListener{
         //String key = databaseReference.push().getKey();
         Long ts = System.currentTimeMillis();
 
-        gravity[0] = 0.8 * gravity[0] + 0.2 * AX;
-        gravity[1] = 0.8 * gravity[1] + 0.2 * AY;
-        gravity[2] = 0.8 * gravity[2] + 0.2 * AZ;
-        Data_ACC data = new Data_ACC(AX, AY, AZ, gravity[0], gravity[1], gravity[2], ts);
+//        gravity[0] = 0.8 * gravity[0] + 0.2 * AX;
+//        gravity[1] = 0.8 * gravity[1] + 0.2 * AY;
+//        gravity[2] = 0.8 * gravity[2] + 0.2 * AZ;
+//        Data_ACC data = new Data_ACC(AX, AY, AZ, gravity[0], gravity[1], gravity[2], ts);
+        Data_ACC data = new Data_ACC(AX, AY, AZ, ts);
         list_ACC.add(data);
 
 
@@ -323,10 +325,11 @@ public class BackgroundService extends Service implements SensorEventListener{
         //String key = databaseReference.push().getKey();
         Long ts = System.currentTimeMillis();
 
-        gravity[0] = 0.8 * gravity[0] + 0.2 * AX;
-        gravity[1] = 0.8 * gravity[1] + 0.2 * AY;
-        gravity[2] = 0.8 * gravity[2] + 0.2 * AZ;
-        Data data = new Data(AX, AY, AZ, GX, GY, GZ, gravity[0], gravity[1], gravity[2], ts);
+//        gravity[0] = 0.8 * gravity[0] + 0.2 * AX;
+//        gravity[1] = 0.8 * gravity[1] + 0.2 * AY;
+//        gravity[2] = 0.8 * gravity[2] + 0.2 * AZ;
+//        Data data = new Data(AX, AY, AZ, GX, GY, GZ, gravity[0], gravity[1], gravity[2], ts);
+        Data data = new Data(AX, AY, AZ, GX, GY, GZ, ts);
         list_both.add(data);
 
 
@@ -354,7 +357,7 @@ public class BackgroundService extends Service implements SensorEventListener{
             if(value!=null){
                 if(value.equals("YES")){
                     disableFallDetection();
-                    locationAndSMS.getLocationAndSendSMS();
+                    locationAndSMS.getLocationAndSendSMS(false);
                     isNotificationEnabled =false;
                     //Toast.makeText(this,"",Toast.LENGTH_SHORT).show();
                 }
@@ -368,6 +371,10 @@ public class BackgroundService extends Service implements SensorEventListener{
                     isNotificationEnabled = false;
                     Toast.makeText(this,"Incase of injury click 'Emergency Distress SMS' button.",Toast.LENGTH_SHORT).show();
                 }
+                else if(value.equals("EMERGENCY")){
+                    Toast.makeText(this,"Emergency text is send to monitor.",Toast.LENGTH_SHORT).show();
+                    locationAndSMS.getLocationAndSendSMS(true);
+                }
 
             }
             if(any_updates!=null){
@@ -379,15 +386,25 @@ public class BackgroundService extends Service implements SensorEventListener{
         }
 
         Intent activityIntent = new Intent(this,SensorActivity.class);
-        activityIntent.putExtra("flag","not_fall");
+        activityIntent.putExtra("flag","fall");
         PendingIntent contentIntent = PendingIntent.getActivity(this,0,activityIntent,0);
 
+        Intent broadCastIntentEmergency = new Intent(this,NotificationReceiverEmergency.class);
+        broadCastIntentEmergency.putExtra("Selected","Emergency");
+        PendingIntent actionIntentEmergency = PendingIntent.getBroadcast(this,0,broadCastIntentEmergency,PendingIntent.FLAG_UPDATE_CURRENT);
+
+
         Notification notification = new NotificationCompat.Builder(this,CHANNEL_2_ID)
-                .setContentTitle("Fall Gudarian")
-                .setContentText("Running on Background.")
                 .setSmallIcon(R.drawable.ic_service)
+                .setContentTitle("Fall Gudarian")
+                .setColor(Color.BLUE)
+                .setContentText("Running on Background.")
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .setAutoCancel(false)
                 .setContentIntent(contentIntent)
+                .addAction(R.drawable.ic_emergency,"SMS EMERGENCY",actionIntentEmergency)
                 .build();
+        notificationManager.notify(2,notification);
         startForeground(2,notification);
 
         return START_NOT_STICKY;
@@ -436,7 +453,7 @@ public class BackgroundService extends Service implements SensorEventListener{
         PendingIntent actionIntentNO = PendingIntent.getBroadcast(this,0,broadCastIntentNO,PendingIntent.FLAG_CANCEL_CURRENT);
 
         Intent broadCastIntentYESNO = new Intent(this,NotificationReceiverYESNO.class);
-        broadCastIntentYES.putExtra("Selected","YesNo");
+        broadCastIntentYESNO.putExtra("Selected","YesNo");
         PendingIntent actionIntentYESNO = PendingIntent.getBroadcast(this,0,broadCastIntentYESNO,PendingIntent.FLAG_CANCEL_CURRENT);
 
 
@@ -449,14 +466,15 @@ public class BackgroundService extends Service implements SensorEventListener{
                         .addLine("Do you want to send SMS?")
                         .addLine("SMS will be sent if you don't respond in "+String.valueOf(timeLimit)+" seconds!")
                 )
+                .setColor(Color.RED)
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
                 .setCategory(NotificationCompat.CATEGORY_ALARM)
                 .setWhen(System.currentTimeMillis())
                 .setUsesChronometer(true)
                 .setAutoCancel(true)
-                .addAction(R.drawable.ic_yes,"Yes, SMS!",actionIntentYES)
-                .addAction(R.drawable.ic_no,"No didn't fall!",actionIntentNO)
-                .addAction(R.drawable.ic_no,"Yes, don't SMS .",actionIntentYESNO)
+                .addAction(R.drawable.ic_yes,"YES SMS!",actionIntentYES)
+                .addAction(R.drawable.ic_no,"NO",actionIntentNO)
+                .addAction(R.drawable.ic_no,"YES,BUT I'M OK.",actionIntentYESNO)
                 .build();
         notificationManager.notify(1,notification);
         isNotificationEnabled = true;
@@ -553,7 +571,7 @@ public class BackgroundService extends Service implements SensorEventListener{
             ///check if 20 seconds have passed since user hasn't responded to the fall dialogue
             //user might be injured
             if (( (System.currentTimeMillis() / 1000.0) - fall_detection_time) >= timeLimit) {
-                locationAndSMS.getLocationAndSendSMS();
+                locationAndSMS.getLocationAndSendSMS(false);
                 disableFallDetection();
                     if(isNotificationEnabled){
                         ///dismiss the notification

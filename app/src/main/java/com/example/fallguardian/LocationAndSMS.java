@@ -27,6 +27,8 @@ import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 
+import java.util.Calendar;
+
 import static com.example.fallguardian.NotifApp.CHANNEL_2_ID;
 import static com.example.fallguardian.NotifApp.CHANNEL_3_ID;
 
@@ -66,10 +68,24 @@ class LocationAndSMS {
     }
 
 
-    public void sendSMSMessage() {
+    public void sendSMSMessage(boolean isEmergency) {
         try {
             phoneNo = elderly.getMonitor_phone_number();
-            message = elderly.getFirstName()+" "+elderly.getLastName()+" fell down and might be injured"+" at location: "+user_map_location+" .";
+
+            Calendar calendar = Calendar.getInstance();
+            int hour24hrs = calendar.get(Calendar.HOUR_OF_DAY);
+            int minutes = calendar.get(Calendar.MINUTE);
+            String time = hour24hrs+":"+minutes;
+
+
+            if(isEmergency){
+                message = elderly.getFirstName()+" "+elderly.getLastName()+" send an emergency at "+time+" and is injured "+" at location: "+user_map_location+" .";
+            }
+            else{
+                message = elderly.getFirstName()+" "+elderly.getLastName()+" fell down at"+time+" and might be injured"+" at location: "+user_map_location+" .";
+            }
+
+
             if (ContextCompat.checkSelfPermission(context,
                     Manifest.permission.SEND_SMS)
                     != PackageManager.PERMISSION_GRANTED) {
@@ -114,7 +130,7 @@ class LocationAndSMS {
 
     }
 
-    public void getLocationAndSendSMS(){
+    public void getLocationAndSendSMS(boolean isEmergency){
         if (ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions((Activity) context, new String[]{Manifest.permission.ACCESS_FINE_LOCATION,Manifest.permission.ACCESS_COARSE_LOCATION,Manifest.permission.ACCESS_BACKGROUND_LOCATION}, PERMISSIONS);
@@ -127,7 +143,13 @@ class LocationAndSMS {
                     if(location!=null){
                         user_map_location = google_map + location.getLatitude() + "," + location.getLongitude();
                         Log.d("SensorActivity",user_map_location+" ********************************************************************* ");
-                        sendSMSMessage();
+                        if(isEmergency)
+                        {
+                            sendSMSMessage(true);
+                        }
+                        else{
+                            sendSMSMessage(false);
+                        }
 
                     }
                     else{
@@ -135,7 +157,14 @@ class LocationAndSMS {
                         Log.d("SensorActivity","Location is null ********************************************************************* ");
 
                         user_map_location = "Location unavailable";
-                        sendSMSMessage();
+                        if(isEmergency)
+                        {
+                            sendSMSMessage(true);
+                        }
+                        else{
+                            sendSMSMessage(false);
+                        }
+
                     }
                 }
             });
