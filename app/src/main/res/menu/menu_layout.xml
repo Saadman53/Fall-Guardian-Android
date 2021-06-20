@@ -1,13 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
-
     <item
-        android:title="Start System"
-        android:id="@+id/startSystemId"
-        />
-    <item
-        android:title="Stop System"
-        android:id="@+id/stopSystemId"
+        android:title="SMS Emergency"
+        android:id="@+id/semergencyMenuId"
         />
     <item
         android:title="Update User Data"
@@ -17,8 +12,8 @@
         android:title="Terms &amp; Conditions"
         android:id="@+id/termsId"
         />
-<item
-    android:title="Sign Out"
-    android:id="@+id/signOutMenuId"
-    />
+    <item
+        android:title="Sign Out"
+        android:id="@+id/signOutMenuId"
+        />
 </menu>

@@ -60,13 +60,17 @@ public class SensorActivity extends AppCompatActivity {
     DatabaseReference databaseReference;
     FirebaseUser user;
 
-    ///display informations
-    TextView userName, monitorPhone;
+    Button service_btn;
 
-    Button emergencyButton;
+    TextView instructionText;
 
 
     LocationAndSMS locationAndSMS;
+
+    String ins_start = "Press the button in the center to start the system.";
+    String ins_stop = "Press the button in the center to stop the system.";
+
+
 
 
     @Override
@@ -95,9 +99,7 @@ public class SensorActivity extends AppCompatActivity {
         databaseReference = FirebaseDatabase.getInstance().getReference("users");
 
 
-        userName = findViewById(R.id.userNameId);
 
-        monitorPhone = findViewById(R.id.monitorPhoneId);
 
         databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
@@ -114,9 +116,6 @@ public class SensorActivity extends AppCompatActivity {
 
                     String monitorphone = "Monitor's Phone: " + elderly.getMonitor_phone_number();
 
-                    userName.setText(username);
-
-                    monitorPhone.setText(monitorphone);
                     Toast.makeText(SensorActivity.this,"Retrieved user data",Toast.LENGTH_SHORT).show();
                 }
                 else{
@@ -140,12 +139,13 @@ public class SensorActivity extends AppCompatActivity {
         locationAndSMS.askPermissions();
 
 
-        emergencyButton = findViewById(R.id.emergencyID);
+        service_btn = findViewById(R.id.service_button);
+        instructionText = findViewById(R.id.instructionId);
 
-        emergencyButton.setOnClickListener(new View.OnClickListener() {
+        service_btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                locationAndSMS.getLocationAndSendSMS(true);
+                service_process(v);
             }
         });
 
@@ -170,11 +170,30 @@ public class SensorActivity extends AppCompatActivity {
         }
     }
 
+    private void service_process(View view) {
+        ///if service is already running
+        if(isMyServiceRunning(BackgroundService.class)){
+            stopService();
+            service_btn.setText("START");
+            instructionText.setText(ins_start);
+
+        }
+        else{
+            startService();
+            service_btn.setText("STOP");
+            instructionText.setText(ins_stop);
+        }
+    }
+
 
     @Override
     protected void onStart() {
         super.onStart();
         PreferenceManager.getDefaultSharedPreferences(this).edit().putBoolean("isActive", true).apply();
+        if(isMyServiceRunning(BackgroundService.class)){
+            service_btn.setText("STOP");
+            instructionText.setText(ins_stop);
+        }
 
         Log.i("ACTIVITY CYCLE", "________________________________________ON START");
     }
@@ -203,26 +222,16 @@ public class SensorActivity extends AppCompatActivity {
            }
             FirebaseAuth.getInstance().signOut();
             finish();
-
-
             Intent intent = new Intent(SensorActivity.this, LogInActivity.class);
             startActivity(intent);
         }
-        else if(item.getItemId() == R.id.startSystemId){
-           if(isMyServiceRunning(BackgroundService.class)){
-               Toast.makeText(this,"System is already running",Toast.LENGTH_SHORT).show();
-           }
-           else{
-               startService();
-           }
-        }
-        else if(item.getItemId() == R.id.stopSystemId){
-            stopService();
-        }
+       else if(item.getItemId()==R.id.semergencyMenuId){
+           locationAndSMS.getLocationAndSendSMS(true);
+       }
         else if(item.getItemId()==R.id.updateId){
-            finish();
+            //finish();
             Intent intent = new Intent(this,UpdateUserData.class);
-            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+            //intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
             startActivity(intent);
         }
         else  if(item.getItemId()==R.id.termsId){

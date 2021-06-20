@@ -79,10 +79,10 @@ class LocationAndSMS {
 
 
             if(isEmergency){
-                message = elderly.getFirstName()+" "+elderly.getLastName()+" send an emergency at "+time+" and is injured "+" at location: "+user_map_location+" .";
+                message = elderly.getFirstName()+" "+elderly.getLastName()+" needs emergency assistance at "+time+" at location: "+user_map_location+" .";
             }
             else{
-                message = elderly.getFirstName()+" "+elderly.getLastName()+" fell down at"+time+" and might be injured"+" at location: "+user_map_location+" .";
+                message = elderly.getFirstName()+" "+elderly.getLastName()+" fell down at "+time+" and may be injured"+" at location: "+user_map_location+" .";
             }
 
 

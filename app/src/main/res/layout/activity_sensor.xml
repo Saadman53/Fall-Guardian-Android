@@ -5,40 +5,39 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:padding="20dp"
-    android:background="#FDFDFD"
+    android:background="#FFFFFF"
+    android:gravity="center"
     android:orientation="vertical"
     tools:context=".SensorActivity"
     >
 
-    <TextView
-        android:layout_marginTop="20dp"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:textColor="@android:color/black"
-        android:id="@+id/userNameId"
-        android:textSize="20sp"
-        />
 
     <TextView
-        android:layout_marginTop="20dp"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:textColor="@android:color/black"
-        android:id="@+id/monitorPhoneId"
-        android:textSize="20sp"
-        />
-
-    <Button
-        android:layout_marginTop="350dp"
+        android:id="@+id/instructionId"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/emergencyID"
-        android:text="@string/emergency"
-        android:layout_gravity="center_horizontal"
-        android:background="@android:color/holo_red_light"
-        />
+
+        android:layout_above="@+id/service_button"
 
 
+        android:layout_marginBottom="100dp"
+        android:gravity="center_horizontal"
+        android:text="Press the button in the center to start the system."
+        android:textAlignment="center"
+        android:textColor="@android:color/black"
+        android:textSize="15sp" />
+
+    <Button
+        android:id="@+id/service_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+
+        android:layout_centerInParent="true"
+        android:background="@drawable/buttonshape_start"
+        android:text="START"
+        android:textColor="#FFFFFF"
+        android:textSize="20sp"
+        app:backgroundTint="#F44336" />
 
 
 </LinearLayout>
