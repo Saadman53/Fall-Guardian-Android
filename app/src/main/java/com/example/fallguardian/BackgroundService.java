@@ -57,6 +57,19 @@ import retrofit2.converter.gson.GsonConverterFactory;
 import static com.example.fallguardian.NotifApp.CHANNEL_1_ID;
 import static com.example.fallguardian.NotifApp.CHANNEL_2_ID;
 
+class Pair<L,R> {
+    private L l;
+    private R r;
+    public Pair(L l, R r){
+        this.l = l;
+        this.r = r;
+    }
+    public L getL(){ return l; }
+    public R getR(){ return r; }
+    public void setL(L l){ this.l = l; }
+    public void setR(R r){ this.r = r; }
+}
+
 public class BackgroundService extends Service implements SensorEventListener{
 
     ///Initializing sensors
@@ -73,6 +86,8 @@ public class BackgroundService extends Service implements SensorEventListener{
     //Datastructures
     List<Data_ACC> list_ACC;
     List<Data> list_both;
+
+    List<Pair<Double,Double>> maxAccList;
 
     ///current user data
 
@@ -132,6 +147,10 @@ public class BackgroundService extends Service implements SensorEventListener{
         collect_data = false;
         list_ACC = new ArrayList<Data_ACC>();
         list_both = new ArrayList<Data>();
+
+        maxAccList = new ArrayList<Pair<Double,Double>>();
+
+        maxAccList.add(new Pair(0.0,0.0));
 
 
         locationAndSMS = new LocationAndSMS(this);
@@ -299,15 +318,18 @@ public class BackgroundService extends Service implements SensorEventListener{
         //String key = databaseReference.push().getKey();
         Long ts = System.currentTimeMillis();
 
-//        gravity[0] = 0.8 * gravity[0] + 0.2 * AX;
-//        gravity[1] = 0.8 * gravity[1] + 0.2 * AY;
-//        gravity[2] = 0.8 * gravity[2] + 0.2 * AZ;
-//        Data_ACC data = new Data_ACC(AX, AY, AZ, gravity[0], gravity[1], gravity[2], ts);
+
         Data_ACC data = new Data_ACC(AX, AY, AZ, ts);
         list_ACC.add(data);
 
+        double maxVal = AX*AX+AY*AY+AZ*AZ;
 
-
+        if( (int)(System.currentTimeMillis() / 1000.0) -  maxAccList.get(maxAccList.size()-1).getR().intValue()>=1 ){
+            maxAccList.add(new Pair(maxVal,System.currentTimeMillis() / 1000.0));
+        }
+        else{
+            maxAccList.get(maxAccList.size()-1).setL( Math.max(maxAccList.get(maxAccList.size()-1).getL(),maxVal) );
+        }
 
         if ((System.currentTimeMillis() / 1000.0) - start_time >= 6.0) {
             int index = binary_ACC(start_time, list_ACC, list_ACC.size());
@@ -316,21 +338,55 @@ public class BackgroundService extends Service implements SensorEventListener{
 
             list_ACC = list_ACC.subList(index + 1, list_ACC.size());
             start_time = (list_ACC.get(0).getTimestamp()) / 1000.0;
-            createPost_ACC(temp);
 
+            ///new code
+            if(checkIfMax(maxAccList)){
+              createPost_ACC(temp);
+                Log.d("MAX POS VAL:","THE MAXIMUM VALUE IS ----------------------> 3 "+Integer.toString(maxAccList.size()));
+            }
+            maxAccList.remove(0);
+
+            //createPost_ACC(temp);
         }
+    }
+
+    private boolean checkIfMax(List<Pair<Double, Double>> List) {
+        int size = List.size();
+        double maxVal = 0.0;
+        int maxpos = 0;
+        Log.d("MAX POS LOOPZ:","LOOP STARTS HERE:");
+        for(int i = 0;i<size-1;i++){
+            Log.d("MAX POS LOOPZ:","------------------------------------> "+Double.toString(List.get(i).getL()));
+            if(List.get(i).getL()>maxVal){
+                maxVal = List.get(i).getL();
+                maxpos = i;
+            }
+        }
+        Log.d("MAX POS LOOPZ:","LOOP ENDS HERE:");
+
+        maxpos = (int)(List.get(maxpos).getR() - List.get(0).getR());
+        Log.d("MAX POS IZZZZZ:","------------------------------------> "+Integer.toString(maxpos));
+
+        if(maxpos ==3 && maxVal>169) return true;
+        else return false;
     }
 
     public void addData_both(double AX, double AY, double AZ, double GX, double GY, double GZ) {
         //String key = databaseReference.push().getKey();
         Long ts = System.currentTimeMillis();
 
-//        gravity[0] = 0.8 * gravity[0] + 0.2 * AX;
-//        gravity[1] = 0.8 * gravity[1] + 0.2 * AY;
-//        gravity[2] = 0.8 * gravity[2] + 0.2 * AZ;
-//        Data data = new Data(AX, AY, AZ, GX, GY, GZ, gravity[0], gravity[1], gravity[2], ts);
+
         Data data = new Data(AX, AY, AZ, GX, GY, GZ, ts);
         list_both.add(data);
+
+        double maxVal = AX*AX+AY*AY+AZ*AZ;
+
+        if( (int)(System.currentTimeMillis() / 1000.0) -  maxAccList.get(maxAccList.size()-1).getR().intValue()>=1 ){
+            maxAccList.add(new Pair(maxVal,System.currentTimeMillis() / 1000.0));
+        }
+        else{
+            maxAccList.get(maxAccList.size()-1).setL( Math.max(maxAccList.get(maxAccList.size()-1).getL(),maxVal) );
+        }
 
 
         if ((System.currentTimeMillis() / 1000.0) - start_time >= 6.0) {
@@ -342,8 +398,12 @@ public class BackgroundService extends Service implements SensorEventListener{
             list_both = list_both.subList(index + 1, list_both.size());
             start_time = (list_both.get(0).getTimestamp()) / 1000.0;
 
-           createPost_both(temp);
-
+            ///new code
+            if(checkIfMax(maxAccList)){
+                createPost_both(temp);
+                Log.d("MAX POS VAL:","THE MAXIMUM VALUE IS ----------------------> 3 "+Integer.toString(maxAccList.size()));
+            }
+            maxAccList.remove(0);
         }
 
     }
