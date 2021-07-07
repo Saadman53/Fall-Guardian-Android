@@ -32,7 +32,7 @@
         android:layout_height="wrap_content"
         android:id="@+id/LoginEmail"
         android:inputType="textEmailAddress"
-        android:hint="Email"
+        android:hint="Email or Phone"
         android:textColorHint="@color/grey"
         android:textColor="@android:color/black"
     />
@@ -60,9 +60,10 @@
         android:layout_height="wrap_content"
         android:textColor="@android:color/holo_blue_dark"
         android:gravity="center"
-        android:text="@string/not_registered"
-        android:id="@+id/signupTextView"
+        android:text="Register as Elderly"
+        android:id="@+id/signupTextViewElderly"
         />
+
 
     <TextView
         android:id="@+id/forgotPassTextView"
@@ -73,7 +74,7 @@
         android:text="Forgot Password"
         android:textColor="@android:color/holo_blue_dark" />
 
-    <TextView
+   <TextView
         android:id="@+id/aboutID"
         android:layout_width="match_parent"
         android:layout_height="32dp"

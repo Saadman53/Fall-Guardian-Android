@@ -1,18 +1,56 @@
 {
   "project_info": {
     "project_number": "508311715942",
+    "firebase_url": "https://fall-monitor-cfd41-default-rtdb.firebaseio.com",
     "project_id": "fall-monitor-cfd41",
     "storage_bucket": "fall-monitor-cfd41.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:508311715942:android:5042c7eb02777184c3ada7",
+        "mobilesdk_app_id": "1:508311715942:android:212b69bfec8904f5c3ada7",
         "android_client_info": {
           "package_name": "com.example.fallguardian"
         }
       },
       "oauth_client": [
+        {
+          "client_id": "508311715942-eim81o5j3og2m7muqsk19det9dtiij51.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAI3RjxEM9s_oAoYX06tQRo4CfPG0_93w4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "508311715942-eim81o5j3og2m7muqsk19det9dtiij51.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:508311715942:android:5042c7eb02777184c3ada7",
+        "android_client_info": {
+          "package_name": "com.fallapp.fallmonitor"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "508311715942-5ekfa2pm68erntkd268mteucfncjac3b.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.fallapp.fallmonitor",
+            "certificate_hash": "f27b115d894550cc7a23eb86d6ce6f1034bd6445"
+          }
+        },
         {
           "client_id": "508311715942-eim81o5j3og2m7muqsk19det9dtiij51.apps.googleusercontent.com",
           "client_type": 3

@@ -20,10 +20,19 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.FallGuardian"
         android:usesCleartextTraffic="true">
-        <activity android:name=".About"></activity>
+
+        <activity
+            android:name=".MonitorActivity"
+            android:launchMode="singleTask" />
+
+        <service android:name=".MonitorService" />
+
+        <activity android:name=".FirstActivity" />
+        <activity android:name=".LogInActivity_Monitor" />
+        <activity android:name=".About" />
         <activity android:name=".Agreement" />
         <activity android:name=".UpdateUserData" />
-        <activity android:name=".SignUpActivity" />
+        <activity android:name=".SignUpActivity_Elderly" />
         <activity android:name=".LogInActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

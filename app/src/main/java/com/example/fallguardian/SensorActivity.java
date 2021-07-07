@@ -222,11 +222,11 @@ public class SensorActivity extends AppCompatActivity {
            }
             FirebaseAuth.getInstance().signOut();
             finish();
-            Intent intent = new Intent(SensorActivity.this, LogInActivity.class);
+            Intent intent = new Intent(SensorActivity.this, FirstActivity.class);
             startActivity(intent);
         }
        else if(item.getItemId()==R.id.semergencyMenuId){
-           locationAndSMS.getLocationAndSendSMS(true);
+           locationAndSMS.getLocationAndSendSMS(true,false,0.0,0.0);
        }
         else if(item.getItemId()==R.id.updateId){
             //finish();
@@ -283,8 +283,9 @@ public class SensorActivity extends AppCompatActivity {
 
     @Override
     public void onRequestPermissionsResult(int requestCode,String permissions[], int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         switch (requestCode) {
-            case PERMISSIONS:{
+            case PERMISSIONS: {
                 if (grantResults.length > 0
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 } else {

@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="20dp"
+    android:background="#FFFFFF"
+    android:gravity="center_horizontal"
+    android:orientation="vertical"
+    tools:context=".LogInActivity_Monitor"
+    >
+
+    <LinearLayout
+        android:id="@+id/phoneL1"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+
+        android:orientation="vertical"
+        android:gravity="center_horizontal">
+
+    <TextView
+        android:layout_marginTop="100dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textAlignment="center"
+        android:text="Log In"
+        android:textSize="25sp"
+        android:gravity="center_horizontal"
+        android:textColor="@color/black"/>
+        <TextView
+            android:layout_marginTop="30dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textAlignment="center"
+            android:text="Enter your phone number in the field below"
+            android:textSize="15sp"
+            android:gravity="center_horizontal"
+            android:textColor="@color/black"/>
+    <EditText
+        android:layout_marginTop="30dp"
+        android:id="@+id/SignupPhone"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="+880**********"
+        android:inputType="phone"
+        android:textColor="@android:color/black"
+        android:layout_centerInParent="true"
+        android:textAlignment="center"
+        android:gravity="center_horizontal"
+        android:textSize="15sp"
+        android:textColorHint="@color/grey" />
+
+    <Button
+        android:layout_marginTop="30dp"
+        android:id="@+id/continue_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Continue"
+        android:textColor="#FFFFFF"
+        android:textSize="15sp"
+        app:backgroundTint="#F44336" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/codeL1"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center_horizontal">
+
+    <TextView
+        android:layout_marginTop="100dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textAlignment="center"
+        android:text="Enter Verification Code"
+        android:textSize="25sp"
+        android:gravity="center_horizontal"
+        android:textColor="@color/black"/>
+        <TextView
+            android:layout_marginTop="30dp"
+            android:id="@+id/VerificationCodeMobileTextID"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textAlignment="center"
+            android:text="Enter the verification code sent to "
+            android:textSize="15sp"
+            android:gravity="center_horizontal"
+            android:textColor="@color/black"/>
+        <EditText
+        android:layout_marginTop="30dp"
+        android:id="@+id/verifyCodeID"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="00000"
+        android:inputType="phone"
+        android:textColor="@android:color/black"
+        android:layout_centerInParent="true"
+        android:textAlignment="center"
+        android:gravity="center_horizontal"
+        android:textSize="15sp"
+        android:textColorHint="@color/grey" />
+    <TextView
+        android:layout_marginTop="10dp"
+        android:id="@+id/ResendCodeTextViewID"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textAlignment="center"
+        android:text="Didn't get OTP? Resend"
+        android:textSize="15sp"
+        android:gravity="center_horizontal"
+        android:textColor="@color/black"/>
+
+    <Button
+        android:layout_marginTop="30dp"
+        android:id="@+id/register_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Log IN"
+        android:textColor="#FFFFFF"
+        android:textSize="15sp"
+        app:backgroundTint="#F44336" />
+    </LinearLayout>
+
+</LinearLayout>

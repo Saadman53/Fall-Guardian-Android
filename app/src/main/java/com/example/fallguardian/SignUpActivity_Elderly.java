@@ -4,9 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.app.DatePickerDialog;
-import android.content.ContentValues;
 import android.content.Intent;
-import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 
 
@@ -24,26 +22,28 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthUserCollisionException;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.database.ValueEventListener;
 
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.Date;
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
 
-public class SignUpActivity extends AppCompatActivity  {
+public class SignUpActivity_Elderly extends AppCompatActivity  {
 
 
-    private static final Object TAG = "SignUpActivity";
-    EditText userFirstName,userLastName,userEmail,userPassword,confirmuserPassword,userNumber,monitorFirstName,monitorLastName,monitorNumber, Birthday;
+    private static final Object TAG = "SignUpActivity_Elderly";
+    EditText userFirstName,userLastName,userEmail,userPassword,confirmuserPassword,monitorNumber, Birthday;
     Button signupButton;
 
     ProgressBar progressBar;
 
-    private DatabaseReference databaseReference,scalerDatabaseReference;
+    private DatabaseReference databaseReference, monitorDatabaseReference;
     private static final String TABLE_NAME = "scale_values";
 
 
@@ -84,7 +84,7 @@ public class SignUpActivity extends AppCompatActivity  {
         progressBar = findViewById(R.id.progressBarId);
 
         databaseReference = FirebaseDatabase.getInstance().getReference("users");
-        scalerDatabaseReference = FirebaseDatabase.getInstance().getReference("scales");
+        monitorDatabaseReference = FirebaseDatabase.getInstance().getReference("monitor");
 
         DatePickerDialog.OnDateSetListener date = new DatePickerDialog.OnDateSetListener() {
 
@@ -106,7 +106,7 @@ public class SignUpActivity extends AppCompatActivity  {
             @Override
             public void onClick(View v) {
                 // TODO Auto-generated method stub
-                new DatePickerDialog(SignUpActivity.this, date, myCalendar
+                new DatePickerDialog(SignUpActivity_Elderly.this, date, myCalendar
                         .get(Calendar.YEAR), myCalendar.get(Calendar.MONTH),
                         myCalendar.get(Calendar.DAY_OF_MONTH)).show();
             }
@@ -210,7 +210,18 @@ public class SignUpActivity extends AppCompatActivity  {
                                  FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
                                  String userID = user.getUid();
                                  databaseReference.child(userID).setValue(elderly);
-                                 Toast.makeText(getApplicationContext(),"SUCCESSFULLY REGISTERED",Toast.LENGTH_SHORT).show();
+
+                                 ///initializing monitor database
+                                 Map<String, Object> map = new HashMap<>();
+
+                                 for (int i=0;i<10;i++){
+                                     map.put(String.valueOf(i), user_first_name+" "+user_last_name+" registered you as their monitor.");
+                                 }
+
+                                 checkAndSetMonitorDatabase(monitor_phone_number);
+                                Toast.makeText(getApplicationContext(),"SUCCESSFULLY REGISTERED",Toast.LENGTH_SHORT).show();
+
+
 
 //
 
@@ -219,7 +230,7 @@ public class SignUpActivity extends AppCompatActivity  {
 
 
                                  finish();
-                                 Intent intent = new Intent(SignUpActivity.this, LogInActivity.class);
+                                 Intent intent = new Intent(SignUpActivity_Elderly.this, LogInActivity.class);
                                  intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                                  startActivity(intent);
 
@@ -241,7 +252,32 @@ public class SignUpActivity extends AppCompatActivity  {
 
     }
 
+    private void checkAndSetMonitorDatabase(String monitor_phone_number) {
+        monitorDatabaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                if(snapshot.exists()){
+                    Map<String, String> map = (Map<String, String>) snapshot.child(monitor_phone_number).getValue();
 
+                    if(map.size()==0){
+                        String x = "+";
+                        Map<String,Object> updatedMap = new HashMap<String, Object>();
+                        for(int i=0;i<10;i++){
+                            updatedMap.put(x,"Null");
+                            x+="+";
+                        }
+                        monitorDatabaseReference.child(monitor_phone_number).updateChildren(updatedMap);
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
+
+    }
 
 
     private void sendVerificationEmail()
@@ -253,11 +289,11 @@ public class SignUpActivity extends AppCompatActivity  {
                     @Override
                     public void onComplete(@NonNull Task<Void> task) {
                         if (task.isSuccessful()) {
-                            Toast.makeText(SignUpActivity.this,"Verification email send",Toast.LENGTH_SHORT).show();
+                            Toast.makeText(SignUpActivity_Elderly.this,"Verification email send",Toast.LENGTH_SHORT).show();
                         }
                         else
                         {
-                            Toast.makeText(SignUpActivity.this,"Error! Couldn't send verification email",Toast.LENGTH_SHORT).show();
+                            Toast.makeText(SignUpActivity_Elderly.this,"Error! Couldn't send verification email",Toast.LENGTH_SHORT).show();
 
                         }
                     }

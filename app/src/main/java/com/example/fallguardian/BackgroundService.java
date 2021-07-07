@@ -102,7 +102,9 @@ public class BackgroundService extends Service implements SensorEventListener{
 
     int prev_response;
     boolean fall_detected;
+    boolean post_fall_movement_detected;
     double fall_detection_time;
+    double post_fall_movement_time = 0.0;
     private Vibrator v;
 
     ///Notificaiton
@@ -354,20 +356,31 @@ public class BackgroundService extends Service implements SensorEventListener{
         int size = List.size();
         double maxVal = 0.0;
         int maxpos = 0;
-        Log.d("MAX POS LOOPZ:","LOOP STARTS HERE:");
+       // Log.d("MAX POS LOOPZ:","LOOP STARTS HERE:");
         for(int i = 0;i<size-1;i++){
-            Log.d("MAX POS LOOPZ:","------------------------------------> "+Double.toString(List.get(i).getL()));
+           // Log.d("MAX POS LOOPZ:","------------------------------------> "+Double.toString(List.get(i).getL()));
             if(List.get(i).getL()>maxVal){
                 maxVal = List.get(i).getL();
                 maxpos = i;
             }
+
         }
-        Log.d("MAX POS LOOPZ:","LOOP ENDS HERE:");
+        if(fall_detected && !post_fall_movement_detected){
+            for(int i = 3;i<size-1;i++){
+                if(List.get(i).getL()>196){ ///14 m/s^2
+                    Log.d("POST FALL MOVEMENT ", "POST FALL MOVEMENT DETECTED _-------------------------_ POST FALL MOVEMENT DETECTED "+List.get(i).getL());
+                    post_fall_movement_detected = true;
+                    post_fall_movement_time =  (System.currentTimeMillis()/1000.0)-fall_detection_time;
+                    break;
+                }
+            }
+        }
+       // Log.d("MAX POS LOOPZ:","LOOP ENDS HERE:");
 
         maxpos = (int)(List.get(maxpos).getR() - List.get(0).getR());
         Log.d("MAX POS IZZZZZ:","------------------------------------> "+Integer.toString(maxpos));
 
-        if(maxpos ==3 && maxVal>169) return true;
+        if(maxpos ==3 && maxVal>196) return true;
         else return false;
     }
 
@@ -416,8 +429,8 @@ public class BackgroundService extends Service implements SensorEventListener{
             String any_updates = intent.getStringExtra("info");
             if(value!=null){
                 if(value.equals("YES")){
+                    locationAndSMS.getLocationAndSendSMS(false,post_fall_movement_detected,fall_detection_time,post_fall_movement_time);
                     disableFallDetection();
-                    locationAndSMS.getLocationAndSendSMS(false);
                     isNotificationEnabled =false;
                     //Toast.makeText(this,"",Toast.LENGTH_SHORT).show();
                 }
@@ -433,7 +446,7 @@ public class BackgroundService extends Service implements SensorEventListener{
                 }
                 else if(value.equals("EMERGENCY")){
                     Toast.makeText(this,"Emergency text is send to monitor.",Toast.LENGTH_SHORT).show();
-                    locationAndSMS.getLocationAndSendSMS(true);
+                    locationAndSMS.getLocationAndSendSMS(true,false,0.0,0.0);
                 }
 
             }
@@ -486,11 +499,13 @@ public class BackgroundService extends Service implements SensorEventListener{
     public void enableFallDetection(){
         fall_detected = true;
         fall_detection_time = System.currentTimeMillis() / 1000.0;
+        post_fall_movement_detected = false;
     }
 
     public void disableFallDetection(){
         fall_detected = false;
         fall_detection_time = 100000000000000.0;
+        post_fall_movement_detected = false;
     }
 
 
@@ -627,11 +642,11 @@ public class BackgroundService extends Service implements SensorEventListener{
 
     private void countFallTimer(){
         if (fall_detected) {
-            Log.d("Sensor Activity","User fell down and time of falling is _________________________________________________________:           "+fall_detection_time);
+            //Log.d("Sensor Activity","User fell down and time of falling is _________________________________________________________:           "+fall_detection_time);
             ///check if 20 seconds have passed since user hasn't responded to the fall dialogue
             //user might be injured
             if (( (System.currentTimeMillis() / 1000.0) - fall_detection_time) >= timeLimit) {
-                locationAndSMS.getLocationAndSendSMS(false);
+                locationAndSMS.getLocationAndSendSMS(false,post_fall_movement_detected,fall_detection_time,post_fall_movement_time);
                 disableFallDetection();
                     if(isNotificationEnabled){
                         ///dismiss the notification

@@ -36,7 +36,7 @@ import com.google.firebase.database.ValueEventListener;
 public class LogInActivity extends AppCompatActivity  {
 
     EditText loginEmail,loginPassword;
-    TextView signupTextView, forgotPasswordTextView, aboutTextView;
+    TextView signupTextViewElderly, forgotPasswordTextView, aboutTextView;
     Button loginButton;
 
     ProgressBar progressBar;
@@ -63,7 +63,7 @@ public class LogInActivity extends AppCompatActivity  {
         loginEmail = (EditText) findViewById(R.id.LoginEmail);
         loginPassword = (EditText) findViewById(R.id.LoginPassword);
         loginButton = (Button) findViewById(R.id.LoginButton);
-        signupTextView = (TextView) findViewById(R.id.signupTextView);
+        signupTextViewElderly = (TextView) findViewById(R.id.signupTextViewElderly);
         forgotPasswordTextView = (TextView) findViewById(R.id.forgotPassTextView);
         aboutTextView = (TextView) findViewById(R.id.aboutID);
 
@@ -71,19 +71,20 @@ public class LogInActivity extends AppCompatActivity  {
 
 
 
-        signupTextView.setOnClickListener(new View.OnClickListener() {
+        signupTextViewElderly.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 ///send to signup activity
-                Intent intent = new Intent(LogInActivity.this,SignUpActivity.class);
+                Intent intent = new Intent(LogInActivity.this, SignUpActivity_Elderly.class);
                 startActivity(intent);
             }
         });
 
+
         databaseReference = FirebaseDatabase.getInstance().getReference("users");
 
 
-        aboutTextView.setOnClickListener(new View.OnClickListener() {
+       aboutTextView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 AlertDialog.Builder aboutDialog = new AlertDialog.Builder(v.getContext());
@@ -178,12 +179,12 @@ public class LogInActivity extends AppCompatActivity  {
         password = loginPassword.getText().toString().trim();
 
         if(email.isEmpty()){
-            loginEmail.setError("Enter an email Address");
+            loginEmail.setError("Enter Credentials");
             loginEmail.requestFocus();
             return;
         }
         if(!Patterns.EMAIL_ADDRESS.matcher(email).matches()){
-            loginEmail.setError("Enter a valid email Address");
+            loginEmail.setError("Enter a valid email or ");
             loginEmail.requestFocus();
             return;
         }
@@ -196,8 +197,8 @@ public class LogInActivity extends AppCompatActivity  {
 
         progressBar.setVisibility(View.VISIBLE);
         if(password.length()>=6){
-            //Toast.makeText(getApplicationContext(),"SUCCESSFULLY REGISTERED",Toast.LENGTH_SHORT).show();
             progressBar.setVisibility(View.GONE);
+
             FirebaseAuth.getInstance().signInWithEmailAndPassword(email,password).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
 
                @Override
@@ -254,7 +255,6 @@ public class LogInActivity extends AppCompatActivity  {
                 }
             });
         }
-
         else{
             first_time("no");
         }
@@ -266,6 +266,7 @@ public class LogInActivity extends AppCompatActivity  {
 
             Intent intent = new Intent(LogInActivity.this,SensorActivity.class);
             //intent.putExtra("flag",text);
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
             startActivity(intent);
         }
@@ -273,6 +274,7 @@ public class LogInActivity extends AppCompatActivity  {
             finish();
 
             Intent intent = new Intent(LogInActivity.this,Agreement.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
             startActivity(intent);
         }

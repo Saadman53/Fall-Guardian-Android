@@ -26,8 +26,13 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
 import java.util.Calendar;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 import static com.example.fallguardian.NotifApp.CHANNEL_2_ID;
 import static com.example.fallguardian.NotifApp.CHANNEL_3_ID;
@@ -49,11 +54,15 @@ class LocationAndSMS {
     ///permissions
     public static final int PERMISSIONS = 99;
 
+    DatabaseReference monitorDatabaseReference;
+
     public LocationAndSMS(Context c) {
         user_map_location = "";
         google_map = "https://maps.google.com/maps?q=";
         context = c;
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(context);
+
+        monitorDatabaseReference = FirebaseDatabase.getInstance().getReference("monitor");
     }
 
     public void askPermissions(){
@@ -68,58 +77,119 @@ class LocationAndSMS {
     }
 
 
-    public void sendSMSMessage(boolean isEmergency) {
+    public void sendSMSMessage(boolean isEmergency, boolean post_fall_movement, double fall_detection_time , double post_fall_movement_time) {
         try {
             phoneNo = elderly.getMonitor_phone_number();
 
-            Calendar calendar = Calendar.getInstance();
-            int hour24hrs = calendar.get(Calendar.HOUR_OF_DAY);
-            int minutes = calendar.get(Calendar.MINUTE);
-            String time = hour24hrs+":"+minutes;
-
 
             if(isEmergency){
+                Calendar calendar = Calendar.getInstance();
+                int hour24hrs = calendar.get(Calendar.HOUR_OF_DAY);
+                int minutes = calendar.get(Calendar.MINUTE);
+                String time = hour24hrs+":"+minutes;
                 message = elderly.getFirstName()+" "+elderly.getLastName()+" needs emergency assistance at "+time+" at location: "+user_map_location+" .";
-            }
-            else{
-                message = elderly.getFirstName()+" "+elderly.getLastName()+" fell down at "+time+" and may be injured"+" at location: "+user_map_location+" .";
-            }
+                if (ContextCompat.checkSelfPermission(context,
+                        Manifest.permission.SEND_SMS)
+                        != PackageManager.PERMISSION_GRANTED) {
+                    if (context instanceof Activity) {
+                        // handle activity case
+                        ActivityCompat.requestPermissions((Activity) context,
+                                new String[]{Manifest.permission.SEND_SMS,Manifest.permission.ACCESS_FINE_LOCATION,Manifest.permission.ACCESS_COARSE_LOCATION,Manifest.permission.ACCESS_BACKGROUND_LOCATION},
+                                PERMISSIONS);
+                    } else if (context instanceof Service){
+                        // handle service case
+                        Intent activityIntent = new Intent(context,SensorActivity.class);
+                        PendingIntent contentIntent = PendingIntent.getActivity(context,0,activityIntent,0);
 
+                        NotificationManagerCompat notificationManagerCompat = NotificationManagerCompat.from(context);
 
-            if (ContextCompat.checkSelfPermission(context,
-                    Manifest.permission.SEND_SMS)
-                    != PackageManager.PERMISSION_GRANTED) {
-                if (context instanceof Activity) {
-                    // handle activity case
-                    ActivityCompat.requestPermissions((Activity) context,
-                            new String[]{Manifest.permission.SEND_SMS,Manifest.permission.ACCESS_FINE_LOCATION,Manifest.permission.ACCESS_COARSE_LOCATION,Manifest.permission.ACCESS_BACKGROUND_LOCATION},
-                            PERMISSIONS);
-                } else if (context instanceof Service){
-                    // handle service case
-                    Intent activityIntent = new Intent(context,SensorActivity.class);
-                    PendingIntent contentIntent = PendingIntent.getActivity(context,0,activityIntent,0);
+                        Notification notification = new NotificationCompat.Builder(context,CHANNEL_3_ID)
+                                .setContentTitle("ALLOW PERMISSIONS!")
+                                .setContentText("Please allow permissions for accessing Location & sending SMS!")
+                                .setSmallIcon(R.drawable.ic_service)
+                                .setContentIntent(contentIntent)
+                                .setAutoCancel(true)
+                                .build();
 
-                    NotificationManagerCompat notificationManagerCompat = NotificationManagerCompat.from(context);
+                        notificationManagerCompat.notify(3,notification);
 
-                    Notification notification = new NotificationCompat.Builder(context,CHANNEL_3_ID)
-                            .setContentTitle("ALLOW PERMISSIONS!")
-                            .setContentText("Please allow permissions for accessing Location & sending SMS!")
-                            .setSmallIcon(R.drawable.ic_service)
-                            .setContentIntent(contentIntent)
-                            .setAutoCancel(true)
-                            .build();
-
-                    notificationManagerCompat.notify(3,notification);
+                    }
 
                 }
-
+                else{
+                    SmsManager smsManager = SmsManager.getDefault();
+                    smsManager.sendTextMessage(phoneNo, null, message, null, null);
+                    Toast.makeText(context, "SMS sent to"+phoneNo, Toast.LENGTH_LONG).show();
+                    Log.d("SensorActivty","SMS SENT ______________________________________________________________");
+                }
             }
             else{
-                SmsManager smsManager = SmsManager.getDefault();
-                smsManager.sendTextMessage(phoneNo, null, message, null, null);
-                Toast.makeText(context, "SMS sent.", Toast.LENGTH_LONG).show();
-                Log.d("SensorActivty","SMS SENT ______________________________________________________________");
+                long currentMillis = (long)(fall_detection_time*1000.0);
+                Date date = new Date(currentMillis);
+                Calendar calendar = Calendar.getInstance();
+                calendar.setTime(date);
+                int day = calendar.get(Calendar.DAY_OF_MONTH);
+                int month = calendar.get(Calendar.MONTH)+1;
+                int year = calendar.get(Calendar.YEAR);
+                int hour = calendar.get(Calendar.HOUR_OF_DAY);
+                int minutes = calendar.get(Calendar.MINUTE);
+                int seconds = calendar.get(Calendar.SECOND);
+
+                String min, h, d, mon,s;
+                if(minutes<10){
+                     min = "0"+minutes;
+                }
+                else{
+                    min = String.valueOf(minutes);
+                }
+                if(hour<10){
+                    h = "0"+hour;
+                }
+                else{
+                    h = String.valueOf(hour);
+                }
+                if(day<10){
+                    d = "0"+day;
+                }
+                else{
+                    d = String.valueOf(day);
+                }
+                if(month<10){
+                    mon = "0"+month;
+                }
+                else{
+                    mon = String.valueOf(month);
+                }
+                if(seconds<10){
+                    s = "0"+seconds;
+                }
+                else{
+                    s = String.valueOf(seconds);
+                }
+
+
+
+                //int key = month*1000+day*100+hour24hrs*60+minutes;
+
+                String fall_time = h+":"+min+":"+s;
+                String time = mon+"\\"+d+"\\"+year+" "+fall_time;
+
+                if(!post_fall_movement){
+                    message = elderly.getFirstName()+" "+elderly.getLastName()+" fell down at "+fall_time+" and may be severely injured"+" at location: "+user_map_location+" . No movement detected since fall.";
+                }
+                else{
+                    message = elderly.getFirstName()+" "+elderly.getLastName()+" fell down at "+fall_time+" and may be injured"+" at location: "+user_map_location+" . Movement detected "+(long)post_fall_movement_time+" seconds after fall.";
+                }
+
+
+                Map<String, Object> map = new HashMap<>();
+                map.put(time, message);
+                monitorDatabaseReference.child(phoneNo).updateChildren(map);
+                Toast.makeText(context, "Message sent to "+phoneNo, Toast.LENGTH_LONG).show();
             }
+
+
+
 
         }
         catch(NullPointerException e){
@@ -130,7 +200,7 @@ class LocationAndSMS {
 
     }
 
-    public void getLocationAndSendSMS(boolean isEmergency){
+    public void getLocationAndSendSMS(boolean isEmergency, boolean post_fall_movement, double fall_detection_time , double post_fall_movement_time){
         if (ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions((Activity) context, new String[]{Manifest.permission.ACCESS_FINE_LOCATION,Manifest.permission.ACCESS_COARSE_LOCATION,Manifest.permission.ACCESS_BACKGROUND_LOCATION}, PERMISSIONS);
@@ -145,10 +215,10 @@ class LocationAndSMS {
                         Log.d("SensorActivity",user_map_location+" ********************************************************************* ");
                         if(isEmergency)
                         {
-                            sendSMSMessage(true);
+                            sendSMSMessage(true,post_fall_movement,fall_detection_time,post_fall_movement_time);
                         }
                         else{
-                            sendSMSMessage(false);
+                            sendSMSMessage(false,post_fall_movement,fall_detection_time,post_fall_movement_time);
                         }
 
                     }
@@ -159,10 +229,10 @@ class LocationAndSMS {
                         user_map_location = "Location unavailable";
                         if(isEmergency)
                         {
-                            sendSMSMessage(true);
+                            sendSMSMessage(true,post_fall_movement,fall_detection_time,post_fall_movement_time);
                         }
                         else{
-                            sendSMSMessage(false);
+                            sendSMSMessage(false,post_fall_movement,fall_detection_time,post_fall_movement_time);
                         }
 
                     }
