@@ -357,7 +357,7 @@ public class BackgroundService extends Service implements SensorEventListener{
         double maxVal = 0.0;
         int maxpos = 0;
        // Log.d("MAX POS LOOPZ:","LOOP STARTS HERE:");
-        for(int i = 0;i<size-1;i++){
+        for(int i = 3;i<size-1;i++){
            // Log.d("MAX POS LOOPZ:","------------------------------------> "+Double.toString(List.get(i).getL()));
             if(List.get(i).getL()>maxVal){
                 maxVal = List.get(i).getL();
@@ -366,21 +366,18 @@ public class BackgroundService extends Service implements SensorEventListener{
 
         }
         if(fall_detected && !post_fall_movement_detected){
-            for(int i = 3;i<size-1;i++){
-                if(List.get(i).getL()>196){ ///14 m/s^2
-                    Log.d("POST FALL MOVEMENT ", "POST FALL MOVEMENT DETECTED _-------------------------_ POST FALL MOVEMENT DETECTED "+List.get(i).getL());
-                    post_fall_movement_detected = true;
-                    post_fall_movement_time =  (System.currentTimeMillis()/1000.0)-fall_detection_time;
-                    break;
-                }
+            if(maxVal>196){ ///14 m/s^2
+                Log.d("POST FALL MOVEMENT ", "POST FALL MOVEMENT DETECTED _-------------------------_ POST FALL MOVEMENT DETECTED "+maxVal);
+                post_fall_movement_detected = true;
+                post_fall_movement_time =  (System.currentTimeMillis()/1000.0)-fall_detection_time;
             }
         }
        // Log.d("MAX POS LOOPZ:","LOOP ENDS HERE:");
 
         maxpos = (int)(List.get(maxpos).getR() - List.get(0).getR());
-        Log.d("MAX POS IZZZZZ:","------------------------------------> "+Integer.toString(maxpos));
+        Log.d("MAX POS IZZZZZ:","------------------------------------> "+Integer.toString(maxpos)+" : "+Double.toString(maxVal));
 
-        if(maxpos ==3 && maxVal>196) return true;
+        if(maxpos ==3 && maxVal>225) return true;
         else return false;
     }
 
@@ -536,10 +533,9 @@ public class BackgroundService extends Service implements SensorEventListener{
         Notification notification = new NotificationCompat.Builder(this,CHANNEL_1_ID)
                 .setSmallIcon(R.drawable.ic_fall)
                 .setContentTitle("Fall Detected!")
+                .setContentText("Did you fell down? Do you want to alert Monitor?")
                 .setStyle(new NotificationCompat.InboxStyle()
-                        .addLine("Did you fell down?")
-                        .addLine("Do you want to send SMS?")
-                        .addLine("SMS will be sent if you don't respond in "+String.valueOf(timeLimit)+" seconds!")
+                        .addLine("Alert will be sent if you don't respond in "+String.valueOf(timeLimit)+" seconds!")
                 )
                 .setColor(Color.RED)
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
@@ -547,9 +543,9 @@ public class BackgroundService extends Service implements SensorEventListener{
                 .setWhen(System.currentTimeMillis())
                 .setUsesChronometer(true)
                 .setAutoCancel(true)
-                .addAction(R.drawable.ic_yes,"YES SMS!",actionIntentYES)
-                .addAction(R.drawable.ic_no,"NO",actionIntentNO)
-                .addAction(R.drawable.ic_no,"YES,BUT I'M OK.",actionIntentYESNO)
+                .addAction(R.drawable.ic_yes,"SEND ALERT!",actionIntentYES)
+                .addAction(R.drawable.ic_no,"NO, I'M OK.",actionIntentNO)
+                .addAction(R.drawable.ic_no,"DON'T ALERT!",actionIntentYESNO)
                 .build();
         notificationManager.notify(1,notification);
         isNotificationEnabled = true;

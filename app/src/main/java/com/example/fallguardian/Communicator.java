@@ -17,8 +17,11 @@ class Communicator {
     //Tarik wifi ipV4: "http://192.168.1.101:8000/"
     //sss wifi: http://192.168.0.179:8000/
     //"https://fall-guardian.herokuapp.com/"
+    //"http://192.168.0.105:8000/" antora
 
-    private final String BaseUrl ="https://fall-guardian.herokuapp.com/";
+
+
+    private final String BaseUrl = "http://192.168.0.180:8000/";
 
     public Communicator() {
         retrofit = new Retrofit.Builder()
