@@ -16,6 +16,8 @@ public class NotifApp extends Application {
     public static final String CHANNEL_2_ID = "channel2";
     public static final String CHANNEL_3_ID = "channel3";
 
+    public static final String HIDE_NOTIFICATION = "Hidden Notification Service";
+
     FirebaseUser user;
 
 
@@ -77,7 +79,7 @@ public class NotifApp extends Application {
             NotificationChannel channel2 = new NotificationChannel(
                     CHANNEL_2_ID,
                     "Channel 2",
-                    NotificationManager.IMPORTANCE_DEFAULT
+                    NotificationManager.IMPORTANCE_LOW
             );
             channel2.setDescription("This is Chanel 2");
 

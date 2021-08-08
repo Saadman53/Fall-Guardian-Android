@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
+
     <item
-        android:title="SMS Emergency"
-        android:id="@+id/semergencyMenuId"
+        android:title="Statistics"
+        android:id="@+id/statsMenuId"
         />
     <item
         android:title="Update User Data"

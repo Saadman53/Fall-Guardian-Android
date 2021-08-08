@@ -6,6 +6,7 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
 import android.graphics.Color;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
@@ -115,7 +116,7 @@ public class BackgroundService extends Service implements SensorEventListener{
     DatabaseReference databaseReference;
     FirebaseUser user;
 
-
+    DatabaseHelper fall_db;
 
 
 
@@ -166,7 +167,12 @@ public class BackgroundService extends Service implements SensorEventListener{
         isNotificationEnabled = false;
         notificationManager = NotificationManagerCompat.from(this);
         getDataFromDataBase();
+
+        fall_db = new DatabaseHelper(this);
+
+
     }
+
 
     private int getAge(String dobString){
 
@@ -208,6 +214,58 @@ public class BackgroundService extends Service implements SensorEventListener{
         }
         else{
             timeLimit = 25+((age-40)/10)*5;
+        }
+    }
+
+    void updateFallDatabase(int detection){
+        Cursor res = fall_db.getLastData();
+
+        long time = System.currentTimeMillis();
+
+        if(res.getCount()==0){
+            ///no data exists
+            if(detection==0){
+                fall_db.insertData(time,1,0,0);
+            }
+            else if(detection==1){
+                fall_db.insertData(time,0,1,0);
+            }
+            else{
+                fall_db.insertData(time,0,0,1);
+            }
+        }
+        else {
+            int ID = new Integer(res.getString(0));
+            long lastTime = new Long(res.getString(1));
+            long timediff = lastTime - time;
+
+            if(timediff< (7 * 24 * 60 * 60 * 1000)){
+                ///in current week
+               int fn = new Integer(res.getString(2));
+               int fp = new Integer(res.getString(3));
+               int tp = new Integer(res.getString(4));
+                if(detection==0){
+                    fall_db.updateData(ID,lastTime,fn+1,fp,tp);
+                }
+                else if(detection==1){
+                    fall_db.updateData(ID,lastTime,fn,fp+1,tp);
+                }
+                else{
+                    fall_db.updateData(ID,lastTime,fn,fp,tp+1);
+                }
+            }
+            else{
+                /// new week
+                if(detection==0){
+                    fall_db.insertData(time,1,0,0);
+                }
+                else if(detection==1){
+                    fall_db.insertData(time,0,1,0);
+                }
+                else{
+                    fall_db.insertData(time,0,0,1);
+                }
+            }
         }
     }
 
@@ -429,21 +487,25 @@ public class BackgroundService extends Service implements SensorEventListener{
                     locationAndSMS.getLocationAndSendSMS(false,post_fall_movement_detected,fall_detection_time,post_fall_movement_time);
                     disableFallDetection();
                     isNotificationEnabled =false;
+                    updateFallDatabase(2);
                     //Toast.makeText(this,"",Toast.LENGTH_SHORT).show();
                 }
                 else if(value.equals("NO")){
                     disableFallDetection();
                     isNotificationEnabled = false;
                     Toast.makeText(this,"Better safe than sorry!",Toast.LENGTH_SHORT).show();
+                    updateFallDatabase(1);
                 }
                 else if(value.equals("YESNO")){
                     disableFallDetection();
                     isNotificationEnabled = false;
                     Toast.makeText(this,"Incase of injury click 'Emergency Distress SMS' button.",Toast.LENGTH_SHORT).show();
+                    updateFallDatabase(2);
                 }
                 else if(value.equals("EMERGENCY")){
                     Toast.makeText(this,"Emergency text is send to monitor.",Toast.LENGTH_SHORT).show();
                     locationAndSMS.getLocationAndSendSMS(true,false,0.0,0.0);
+                    updateFallDatabase(0);
                 }
 
             }
@@ -454,6 +516,7 @@ public class BackgroundService extends Service implements SensorEventListener{
                 }
             }
         }
+        display_fallData();
 
         Intent activityIntent = new Intent(this,SensorActivity.class);
         activityIntent.putExtra("flag","fall");
@@ -643,6 +706,7 @@ public class BackgroundService extends Service implements SensorEventListener{
             //user might be injured
             if (( (System.currentTimeMillis() / 1000.0) - fall_detection_time) >= timeLimit) {
                 locationAndSMS.getLocationAndSendSMS(false,post_fall_movement_detected,fall_detection_time,post_fall_movement_time);
+                updateFallDatabase(2);
                 disableFallDetection();
                     if(isNotificationEnabled){
                         ///dismiss the notification
@@ -651,6 +715,27 @@ public class BackgroundService extends Service implements SensorEventListener{
                     }
 
             }
+        }
+
+    }
+
+    void display_fallData(){
+        Cursor res = fall_db.getAllData();
+
+        StringBuffer stringBuffer = new StringBuffer();
+        if(res.getCount()!=0){
+            while (res.moveToNext()){
+                stringBuffer.append("ID: "+res.getString(0));
+                stringBuffer.append("\nTime: "+res.getString(1));
+                stringBuffer.append("\nFN: "+res.getString(2));
+                stringBuffer.append("\nFP: "+res.getString(3));
+                stringBuffer.append("\nTP: "+res.getString(4));
+                stringBuffer.append("\n_______________________________________________\n");
+            }
+            Log.i("ALL DATA ------------->",stringBuffer.toString());
+        }
+        else{
+            Log.i("ALL DATA"," --------------------> Empty");
         }
 
     }

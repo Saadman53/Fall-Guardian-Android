@@ -21,7 +21,7 @@ class Communicator {
 
 
 
-    private final String BaseUrl = "http://192.168.0.180:8000/";
+    private final String BaseUrl = "https://fall-guardian.herokuapp.com/";
 
     public Communicator() {
         retrofit = new Retrofit.Builder()

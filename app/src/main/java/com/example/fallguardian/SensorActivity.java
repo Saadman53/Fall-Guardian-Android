@@ -225,9 +225,7 @@ public class SensorActivity extends AppCompatActivity {
             Intent intent = new Intent(SensorActivity.this, FirstActivity.class);
             startActivity(intent);
         }
-       else if(item.getItemId()==R.id.semergencyMenuId){
-           locationAndSMS.getLocationAndSendSMS(true,false,0.0,0.0);
-       }
+
         else if(item.getItemId()==R.id.updateId){
             //finish();
             Intent intent = new Intent(this,UpdateUserData.class);
@@ -239,6 +237,11 @@ public class SensorActivity extends AppCompatActivity {
            //intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
            startActivity(intent);
         }
+        else if(item.getItemId()==R.id.statsMenuId){
+           Intent intent = new Intent(this,StatsActivity.class);
+           //intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+           startActivity(intent);
+       }
         return super.onOptionsItemSelected(item);
     }
 
